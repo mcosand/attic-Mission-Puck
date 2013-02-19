@@ -1,0 +1,39 @@
+<h2>Mission logs for <%= @mission.title %></h2>
+
+<table>
+  <thead>
+    <tr><th>Time</th><th>Log Message</th></tr>
+  </thead>
+  <tbody data-bind="foreach: logs">
+<% @logs.each do |log| %>
+    <tr><td data-bind="text: when"></td><td data-bind="text: message"></td></tr>
+<% end %>
+  </tbody>
+</table>
+
+<script type="text/javascript" src="http://<%= request.host %>:9292/faye.js"></script>
+
+<script>
+
+var PageModel = function()
+{
+  var self = this;
+
+  this.logs = ko.observableArray();
+}
+
+$(document).ready(function() {
+  var model = new PageModel();
+<% @logs.each do |log| %>
+	model.logs.push({message: '<%= log.message %>', when: '<%= log.when %>'});
+<% end %>
+
+	ko.applyBindings(model);
+
+  var faye = new Faye.Client('http://<%= request.host %>:9292/faye');
+  faye.subscribe("/logs/new", function(data) {
+		if (console.log) console.log(data);
+		model.logs.push({message: data, when: ''});
+	});
+});
+</script>

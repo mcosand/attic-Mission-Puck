@@ -11,6 +11,25 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 0) do
+ActiveRecord::Schema.define(:version => 20130219073201) do
+
+  create_table "logs", :force => true do |t|
+    t.text     "message"
+    t.datetime "when"
+    t.integer  "mission_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "logs", ["mission_id"], :name => "index_logs_on_mission_id"
+
+  create_table "missions", :force => true do |t|
+    t.string   "title"
+    t.datetime "started"
+    t.string   "number"
+    t.string   "county"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
 end
