@@ -1,39 +1,120 @@
-<h2>Mission logs for <%= @mission.title %></h2>
+<h2 style="margin-top:1.2em;">Mission logs for <%= @mission.title %></h2>
 
-<table>
+<table cellspacing="0">
   <thead>
     <tr><th>Time</th><th>Log Message</th></tr>
   </thead>
-  <tbody data-bind="foreach: logs">
-<% @logs.each do |log| %>
-    <tr><td data-bind="text: when"></td><td data-bind="text: message"></td></tr>
-<% end %>
+  <tbody data-bind="foreach: {data: logs, afterAdd: highlightRow}">
+    <tr><td data-bind="text: formattedWhen"></td><td data-bind="text: message"></td></tr>
   </tbody>
+	<tfoot>
+		<tr>
+				<td style="vertical-align:top;">
+					<input type="text" data-bind="value: formattedWhen, disable:doUpdateWhen" style="width:6em;"></input><br/>
+					<input type="checkbox" id="autoUpdate" data-bind="checked: doUpdateWhen"/><label for="autoUpdate"> auto update</label>
+				</td>
+				<td>
+				  <textarea id="newMsg" data-bind="value: nextLogEntry, hasfocus: focusForm, event: { keyup: cancelScroll }" style="width:40em; height:4em;"></textarea><br/>
+				  <input id="saveLogButton" type="button" value="Save Log" data-bind="click: doSave" />
+				</td></tr>
+	</tfoot>
 </table>
+<form id="newLogForm" data-bind="with: nextLogEntry">
+</form>
+
+<div style="background-color: blue; white-space:pre" data-bind="text: nextLogEntry().message"></div>
+
+<div id="controlPanel" style="position:fixed; top:-2px; width:98%; margin:auto; border-radius:0px 0px 5px 5px; border:solid 2px #444444; background:#eeeeee;">
+  <input type="checkbox" id="autoScroll" data-bind="checked: doAutoScroll"/>
+  <label for="autoScroll">Automatically scroll</label>
+</div>
 
 <script type="text/javascript" src="http://<%= request.host %>:9292/faye.js"></script>
 
 <script>
+
+var LogModel = function(id, message, when)
+{
+	var self = this;
+	this.id = ko.observable(id);
+	this.message = ko.observable(message);
+	this.when = ko.observable(when);
+
+  this.formattedWhen = ko.computed(function() { return formatDateTime('mm-dd HH:ii', this.when()); }, this);
+}
 
 var PageModel = function()
 {
   var self = this;
 
   this.logs = ko.observableArray();
+	this.nextLogEntry = ko.observable('');
+	this.nextLogWhen = ko.observable(new Date());
+	this.formattedWhen = ko.computed({
+		read: function() { return formatDateTime('mm-dd HH:ii', this.nextLogWhen()); },
+    write: function(value) {
+			
+			this.nextLogWhen(new Date(new Date().getFullYear() + ' ' + value));
+		},
+		owner: this});
+
+	this.focusForm = ko.observable(true);
+	this.doUpdateWhen = ko.observable(true);
+  this.doAutoScroll = ko.observable(true);
+
+	this.highlightRow = function(domNode)
+	{
+		$(domNode).filter('tr').effect('highlight', 5000);
+	}
+
+	this.logsSort = function(left, right)
+  {
+		var l = isNaN(left.when()) ? new Date(0) : left.when().getTime();
+		var r = isNaN(right.when()) ? new Date(0) : right.when().getTime();
+		var val = 0;
+
+		val = (l == r) ? (left.id() < right.id() ? -1 : 1) : (l < r ? -1 : 1);
+
+		return val;
+  }
+
+	this.cancelScroll = function(model,evt)
+	{
+		if (self.doAutoScroll() && evt.keyCode != 9)
+		{
+ 			self.doAutoScroll(false);
+			$('#controlPanel').effect('highlight', { color: 'pink' }, 2000);
+		}
+  }
+
+	this.doSave = function()
+	{
+		$.ajax({ type: 'POST', url: '<%= mission_path(@mission) %>/logs.json', data: '{"log":' +ko.toJSON({message: self.nextLogEntry(), when: self.nextLogWhen()})+'}', dataType: 'JSON', contentType:'application/json; charset=utf-8'})
+			.done(function(result) {
+				$('#saveLogButton')[0].scrollIntoView();
+				self.focusForm(true);
+			});
+	}
 }
 
 $(document).ready(function() {
   var model = new PageModel();
 <% @logs.each do |log| %>
-	model.logs.push({message: '<%= log.message %>', when: '<%= log.when %>'});
+	model.logs.push(new LogModel(<%= log.id %>, '<%= log.message %>', new Date('<%= log.when %>')));
 <% end %>
+	model.logs.sort(model.logsSort);
 
 	ko.applyBindings(model);
 
   var faye = new Faye.Client('http://<%= request.host %>:9292/faye');
   faye.subscribe("/logs/new", function(data) {
+		data = JSON.parse(data)
 		if (console.log) console.log(data);
-		model.logs.push({message: data, when: ''});
+		model.logs.push(new LogModel(data.id, data.message, new Date(data.when)));
+		model.logs.sort(model.logsSort);
+  	if (model.doAutoScroll()) $('#saveLogButton')[0].scrollIntoView();
 	});
+
+	window.setInterval(function() { if (model.doUpdateWhen()) model.nextLogWhen(new Date()); }, 1000);
 });
 </script>

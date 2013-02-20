@@ -1,1 +1,47 @@
-This is the home page.
+<!-- ko if: activeMission -->
+<div style="box-shadow:rgba(10,10,10,0.5) 3px 3px 5px; border-radius:8px; border:solid 2px #444444; padding:5px; display:inline-block; margin-bottom:10px" data-bind="with:activeMission">
+<h2 data-bind="text:title" style="margin:0px;" />
+
+<h4><a data-bind="attr: { href: '<%= missions_path %>/' + id() + '/logs' }" target="_blank">Logs</a></h4>
+
+</div><br/>
+<!-- /ko -->
+<!-- ko ifnot: activeMission -->
+<div>No active Missions</div>
+<!-- /ko -->
+
+<input type="button" value="Start New Mission" data-bind="click: doNewMission" />
+
+<script type="text/javascript">
+
+var MissionModel = function(model)
+{
+	var self = this;
+	this.id = ko.observable(model.id);
+  this.title = ko.observable(model.title);
+	this.started = ko.observable(new Date(model.started));
+}
+
+var PageModel = function()
+{
+	var self = this;
+
+	this.activeMission = ko.observable();
+
+	this.doNewMission = function()
+	{
+		window.location.href = '<%= new_mission_url %>';
+	}
+}
+
+
+$(document).ready(function() {
+  var model = new PageModel();
+	<% if @activeMission %>
+	model.activeMission(new MissionModel(JSON.parse('<%= @activeMission.to_json.html_safe %>')));
+	<% end %>
+  ko.applyBindings(model);
+});
+
+</script>
+
