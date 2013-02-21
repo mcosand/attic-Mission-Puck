@@ -1,6 +1,6 @@
 <h2 style="margin-top:1.2em;">Mission logs for <%= @mission.title %></h2>
 
-<table cellspacing="0">
+<table cellspacing="0" id="logTable">
   <thead>
     <tr><th>Time</th><th>Log Message</th></tr>
   </thead>
@@ -91,6 +91,7 @@ var PageModel = function()
 	{
 		$.ajax({ type: 'POST', url: '<%= mission_path(@mission) %>/logs.json', data: '{"log":' +ko.toJSON({message: self.nextLogEntry(), when: self.nextLogWhen()})+'}', dataType: 'JSON', contentType:'application/json; charset=utf-8'})
 			.done(function(result) {
+				self.nextLogEntry('');
 				$('#saveLogButton')[0].scrollIntoView();
 				self.focusForm(true);
 			});

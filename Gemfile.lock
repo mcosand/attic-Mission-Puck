@@ -28,7 +28,7 @@ GEM
     activesupport (3.2.12)
       i18n (~> 0.6)
       multi_json (~> 1.0)
-    addressable (2.3.2)
+    addressable (2.3.3)
     arel (3.0.2)
     builder (3.0.4)
     capybara (2.0.2)
@@ -38,6 +38,11 @@ GEM
       rack-test (>= 0.5.4)
       selenium-webdriver (~> 2.0)
       xpath (~> 1.0.0)
+    capybara-screenshot (0.3.4)
+      capybara (>= 1.0, < 3)
+    capybara-webkit (0.14.2)
+      capybara (~> 2.0, >= 2.0.2)
+      json
     childprocess (0.3.8)
       ffi (~> 1.0, >= 1.0.11)
     coffee-rails (3.2.2)
@@ -69,9 +74,11 @@ GEM
     em-socksify (0.2.1)
       eventmachine (>= 1.0.0.beta.4)
     erubis (2.7.0)
-    eventmachine (1.0.0.rc.4)
+    eventmachine (1.0.0)
     execjs (1.4.0)
       multi_json (~> 1.0)
+    factory_girl (4.2.0)
+      activesupport (>= 3.0.0)
     faye (0.8.8)
       cookiejar (>= 0.3.0)
       em-http-request (>= 0.3.0)
@@ -176,9 +183,12 @@ PLATFORMS
 
 DEPENDENCIES
   capybara
+  capybara-screenshot
+  capybara-webkit
   coffee-rails (~> 3.2.1)
   cucumber-rails
   database_cleaner
+  factory_girl
   faye
   jquery-rails
   rails (= 3.2.12)
