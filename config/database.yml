@@ -21,7 +21,7 @@ test: &test
 production:
   adapter: postgresql
   database: puck
-	min_messages: warning
+  min_messages: warning
 
 cucumber:
   <<: *test

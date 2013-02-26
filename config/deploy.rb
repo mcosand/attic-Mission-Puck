@@ -1,6 +1,6 @@
 require 'bundler/capistrano'
 #$:.unshift(File.expand_path('./lib', ENV['rvm_path']))
-require 'rvm/capistrano'
+#require 'rvm/capistrano'
 
 set :application, "mission-puck"
 set :repository,  "git://github.com/mcosand/Mission-Puck.git"
@@ -8,9 +8,9 @@ set :repository,  "git://github.com/mcosand/Mission-Puck.git"
 # set :scm, :git # You can set :scm explicitly or Capistrano will make an intelligent guess based on known version control directory names
 # Or: `accurev`, `bzr`, `cvs`, `darcs`, `git`, `mercurial`, `perforce`, `subversion` or `none`
 
-role :web, "localhost"                          # Your HTTP server, Apache/etc
-role :app, "localhost"                          # This may be the same as your `Web` server
-role :db,  "localhost", :primary => true # This is where Rails migrations will run
+role :web, "alarmpi"                          # Your HTTP server, Apache/etc
+role :app, "alarmpi"                          # This may be the same as your `Web` server
+role :db,  "alarmpi", :primary => true # This is where Rails migrations will run
 #role :db,  "your slave db-server here"
 
 set :user, "puck"
