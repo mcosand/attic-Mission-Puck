@@ -12,3 +12,8 @@ Feature: Mission logging
 	Scenario: Create log message
 		When I submit a log message "Log Test Message"
 		Then the page should show a log message "Log Test Message"
+
+	@javascript
+	Scenario: Empty log message
+		When I submit a log message ""
+		Then the page should report an invalid log message.

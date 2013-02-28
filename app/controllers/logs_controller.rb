@@ -3,6 +3,10 @@ class LogsController < ApplicationController
 
 	def index
 		@logs = @mission.logs.all
+		respond_to do |format|
+			format.html # index.html.erb
+			format.json { render :json => @logs }
+		end
 	end
 
 	def create
@@ -10,8 +14,6 @@ class LogsController < ApplicationController
 
 		respond_to do |format|
 			if @log.save
-		    logger.info 'In observer handler'
-		    puts 'In observer handler'
 		    broadcast "/logs/new", @log.to_json
 
 				format.html # new.html.erb

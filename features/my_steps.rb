@@ -18,5 +18,12 @@ end
 
 Then /^the page should show a log message "(.*?)"$/ do |text|
 	page.find('#logTable').should have_content(text)
+end
+
+Then /^the page should report an invalid log message\.$/ do
+  page.should have_content("can't be blank")
+end
+
+When /^I take a screenshot$/ do
 	screenshot_and_save_page
 end
