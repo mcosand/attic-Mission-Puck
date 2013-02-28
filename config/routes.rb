@@ -1,6 +1,8 @@
 Puck::Application.routes.draw do
 	root :to => 'home#index'
 
+	match 'home/:action/:id' => 'home'
+
 	resources :missions do
 		resources :logs
 	end

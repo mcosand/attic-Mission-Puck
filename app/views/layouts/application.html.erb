@@ -5,10 +5,22 @@
   <%= stylesheet_link_tag    "application", :media => "all" %>
   <%= javascript_include_tag "application" %>
   <%= csrf_meta_tags %>
+  <script type="text/javascript">var siteRoot='<%= root_url %>'</script>
 </head>
 <body>
 
 <%= yield %>
 
+<div id="setTimeDialog" title="Set Server Time" style="display:none;">
+  <p>The Mission Puck server can't find a time source. Please enter the current local time <span style="white-space:nowrap;">(yyyy-mm-dd hh:mm).</span></p>
+  <label for="setTimeValue">Time:</label> <input type="text" id="setTimeValue"></input> <span id="setTimeTips"></span>
+</div>
+
+<script type="text/javascript">
+var sysTime = new XDate('<%= Time.now %>')
+$(document).ready(function() {
+  if (sysTime.getFullYear() < 1990) needSetServerTime();
+});
+</script>
 </body>
 </html>
