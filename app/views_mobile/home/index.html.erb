@@ -1,0 +1,35 @@
+<div data-role="header" data-position="fixed">
+  <h1>King Co. SAR</h1>
+  <a href="#" data-icon="bars" class="ui-btn-right">Menu</a>
+</div>
+
+<div data-role="content">
+	<a href="#createPage" data-role="button">Start New Mission</a>
+  <ul data-role="listview" data-inset="true" data-bind="foreach: recent, listViewRefresh: recent">
+    <li><a data-bind="text:title, attr: { href: '<%= root_url %>missions/' + id }" data-ajax="false"></a></li>
+  </ul>
+</div>
+
+<script type="text/javascript">
+var StartPageModel = function() {
+  var self = this;
+  this.recent = ko.observableArray();
+
+  this.loadRecent = function()
+  {
+		$.ajax({type:'GET', url: '<%= root_url %>missions/mostrecent/5'})
+     .done(function(result) {
+       self.recent(result);
+     });
+  }
+}
+
+var model = new StartPageModel();
+
+ko.applyBindings(model);
+
+$(document).ready(function() {
+  model.loadRecent();
+});
+
+</script>

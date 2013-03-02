@@ -1,10 +1,13 @@
 Puck::Application.routes.draw do
-	root :to => 'home#index'
+  root :to => 'home#index'
 
-	match 'home/:action/:id' => 'home'
+  match 'home/:action/:id' => 'home'
 
-	resources :missions do
-		resources :logs
+  resources :missions do
+    collection do
+      get 'mostrecent(/:id)', to: 'missions#mostrecent'
+    end
+    resources :logs
 	end
 
   # The priority is based upon order of creation:

@@ -1,8 +1,10 @@
 class LogsController < ApplicationController
 	before_filter :find_mission
 
+	before_filter :check_for_mobile
+
 	def index
-		@logs = @mission.logs.all
+		@logs = @mission.logs.all( :order => '"when" DESC')
 		respond_to do |format|
 			format.html # index.html.erb
 			format.json { render :json => @logs }

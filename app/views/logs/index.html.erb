@@ -7,7 +7,7 @@
   <tbody data-bind="foreach: {data: logs, afterAdd: highlightRow}">
     <tr data-bind="css: { odd: $index() % 2 != 0 }">
 			<td class="r"><span data-bind="text:dateOffset"></span><span data-bind="text:when().toString('HH:mm')" class="b"></span></td>
-			<td data-bind="text: message"></td>
+			<td data-bind="text:message"></td>
 		</tr>
   </tbody>
 	<tfoot>

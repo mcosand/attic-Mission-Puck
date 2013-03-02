@@ -1,4 +1,6 @@
 class HomeController < ApplicationController
+	before_filter :check_for_mobile
+
 	def index
 		@activeMission = Mission.order(:started).last
 	end

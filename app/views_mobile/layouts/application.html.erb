@@ -1,0 +1,13 @@
+<html>
+<head>
+  <title>Mission Puck</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <%= stylesheet_link_tag    "mobile", :media => "all" %>
+  <%= javascript_include_tag "mobile" %>
+  <%= csrf_meta_tags %>
+  <script type="text/javascript">var siteRoot='<%= root_url %>';var fayeRoot='http://<%= request.host %>:9292/faye'</script>
+</head>
+<body>
+<%= yield %>
+</body>
+</head>
