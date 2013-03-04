@@ -155,7 +155,10 @@ $(document).ready(function() {
   faye.subscribe("/logs/new", function(data) {
     data = JSON.parse(data)
     appModel.pushLog(data);
- });
+  });
+  faye.subscribe("/logs/delete", function(data) {
+    appModel.logs.remove(function(f) { return f.id == data });
+  });
 
   setTimeout(function() {
     appModel.loadLogs();

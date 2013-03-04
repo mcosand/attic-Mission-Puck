@@ -19,7 +19,7 @@
 <script type="text/javascript">
 var sysTime = new XDate('<%= Time.now %>')
 $(document).ready(function() {
-  if (sysTime.getFullYear() < 1990) needSetServerTime();
+  if (sysTime.getTime() + 60 * 60 * 1000 < new Date().getTime()) needSetServerTime();
 });
 </script>
 </body>

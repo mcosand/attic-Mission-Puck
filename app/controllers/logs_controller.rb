@@ -27,6 +27,13 @@ class LogsController < ApplicationController
 		end
 	end
 
+  def destroy
+    @log = @mission.logs.find(params[:id])
+    @log.destroy
+    broadcast "/logs/delete", params[:id]
+    render :json => params[:id]
+  end
+
 	private
 		def find_mission
 			@mission = Mission.find(params[:mission_id])

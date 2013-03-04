@@ -1,5 +1,14 @@
 function log(msg) { if (window['console'] !== undefined && console.log) console.log(msg); }
 
+function convertToDate(model, fields)
+{
+  for (var i = 0; i<fields.length; i++)
+  {
+    model[fields[i]] = new XDate(model[fields[i]]);
+  }
+  return model;
+}
+
 function needSetServerTime() {
   var timeBox = $('#setTimeValue').val(new XDate().toString('yyyy-MM-dd HH:mm'));
   var tips = $('#setTimeTips')

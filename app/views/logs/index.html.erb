@@ -2,12 +2,13 @@
 <h5>Mission Start: <span data-bind="text: mission.started().toString('dddd MMM d, yyyy')"></span></h5>
 <table cellspacing="0" id="logTable" class="data-table">
   <thead>
-    <tr><th>Time</th><th>Log Message</th></tr>
+    <tr><th>Time</th><th>Log Message</th><th></th></tr>
   </thead>
   <tbody data-bind="foreach: {data: logs, afterAdd: highlightRow}">
     <tr data-bind="css: { odd: $index() % 2 != 0 }">
-			<td class="r"><span data-bind="text:dateOffset"></span><span data-bind="text:when().toString('HH:mm')" class="b"></span></td>
+			<td class="r"><span data-bind="text:getMissionDateOffset(when)"></span><span data-bind="text:when.toString('HH:mm')" class="b"></span></td>
 			<td data-bind="text:message"></td>
+      <td><a href="#" data-bind="click: $parent.doDelete">Delete</a></td>
 		</tr>
   </tbody>
 	<tfoot>
@@ -20,7 +21,7 @@
 				  <textarea id="newMsg" data-bind="value: nextLogEntry, hasfocus: focusForm, event: { keyup: cancelScroll }, css: { errInput: nextLogErrors().message }, ctrlEnter: doSave" style="width:40em; height:4em;"></textarea><br/>
 					<div class="fieldErr" data-bind="visible: nextLogErrors().message, text: nextLogErrors().message"></div>
 				  <input id="saveLogButton" type="button" value="Save Log" data-bind="click: doSave" />
-				</td></tr>
+				</td><td></td></tr>
 	</tfoot>
 </table>
 <form id="newLogForm" data-bind="with: nextLogEntry">
@@ -36,18 +37,6 @@
 <script type="text/javascript" src="http://<%= request.host %>:9292/faye.js"></script>
 
 <script>
-var LogModel = function(id, message, when)
-{
-	var self = this;
-	this.id = ko.observable(id);
-	this.message = ko.observable(message);
-	this.when = ko.observable(when);
-
-	this.dateOffset = ko.computed(function(){
-		return (window['getMissionDateOffset']) ? getMissionDateOffset(this.when()) : this.when().toString('MMM dd');
-	}, this);
-}
-
 var MissionModel = function(apiModel)
 {
 	var self = this;
@@ -69,7 +58,7 @@ var getMissionDateOffset = function(t)
 		var diff = d.diffDays(t2);
   	return diff ? diff + '+' : '';
 	}
-	return t.toString('MMM dd ');
+	return t ? t.toString('MMM dd ') : '';
 }
 
 var PageModel = function(apiMission)
@@ -109,8 +98,8 @@ var PageModel = function(apiMission)
 
 	this.logsSort = function(left, right)
   {
-		var l = isNaN(left.when()) ? new Date(0) : left.when().getTime();
-		var r = isNaN(right.when()) ? new Date(0) : right.when().getTime();
+		var l = isNaN(left.when) ? new Date(0) : left.when.getTime();
+		var r = isNaN(right.when) ? new Date(0) : right.when.getTime();
 		var val = 0;
 
 		val = (l == r) ? (left.id() < right.id() ? -1 : 1) : (l < r ? -1 : 1);
@@ -125,6 +114,13 @@ var PageModel = function(apiMission)
  			self.doAutoScroll(false);
 			$('#controlPanel').effect('highlight', { color: 'pink' }, 2000);
 		}
+  }
+
+  this.doDelete = function(model)
+  {
+    $.ajax({ type: 'DELETE', url: siteRoot + 'missions/' + model.mission_id + '/logs/' + model.id + '.json', dataType: 'JSON', contentType:'application/json; charset=utf-8'})
+		.done(function() {
+    });
   }
 
 	this.doSave = function()
@@ -152,7 +148,7 @@ $(document).ready(function() {
   model.nextLogWhen(new XDate());
 
 <% @logs.each do |log| %>
-	model.logs.push(new LogModel(<%= log.id %>, '<%= j(log.message.html_safe) %>', new XDate('<%= log.when %>')));
+	model.logs.push(convertToDate(<%= log.to_json.html_safe %>, ['when']));
 <% end %>
 	model.logs.sort(model.logsSort);
 
@@ -167,6 +163,9 @@ $(document).ready(function() {
 		model.logs.sort(model.logsSort);
   	if (model.doAutoScroll()) $('#saveLogButton')[0].scrollIntoView();
 	});
+  faye.subscribe("/logs/delete", function(data) {
+    model.logs.remove(function(f) { return f.id == data });
+  });
 
 	window.setInterval(function() { if (model.doUpdateWhen()) model.nextLogWhen(new XDate()); }, 1000);
 });
