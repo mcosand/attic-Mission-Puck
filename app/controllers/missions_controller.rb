@@ -2,7 +2,7 @@ class MissionsController < ApplicationController
   before_filter :check_for_mobile
 
   def show
-    @mission = Mission.find(params[:id])
+    @mission = Mission.find(UUIDTools::UUID.parse(params[:id]))
     respond_to do |format|
       format.html # show.html.erb
       format.json { render :json => @mission }

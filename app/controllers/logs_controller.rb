@@ -12,30 +12,45 @@ class LogsController < ApplicationController
 	end
 
 	def create
-		@log = @mission.logs.build(params[:log])
+		log = @mission.logs.build(params[:log])
+    act = CreateLogAction.new(:data => log.to_json, :when => Time.now, :source => "@#{`hostname`.strip}")
+
+    val = false
+    act.transaction do
+      val = act.perform
+      act.save
+    end
+
+    log = @mission.logs.find(act.reference)
 
 		respond_to do |format|
-			if @log.save
-		    broadcast "/logs/new", @log.to_json
+			if val
+		    broadcast "/logs/new", log.to_json
 
 				format.html # new.html.erb
-				format.json { render :json => @log }
+				format.json { render :json => log }
 			else
 				format.html { render :action => "new" }
-				format.json { render :json => @log.errors, :status => :unprocessable_entity }
+				format.json { render :json => log.errors, :status => :unprocessable_entity }
 			end
 		end
 	end
 
   def destroy
-    @log = @mission.logs.find(params[:id])
-    @log.destroy
+    log = @mission.logs.find(params[:id])
+    act = DestroyLogAction.new(:data => {:id => log.id, :mission_id => log.mission_id}.to_json, :when => Time.now, :source => "@{`hostname`.strip}")
+
+    act.transaction do
+      act.perform
+      act.save
+    end
+
     broadcast "/logs/delete", params[:id]
     render :json => params[:id]
   end
 
 	private
 		def find_mission
-			@mission = Mission.find(params[:mission_id])
+			@mission = Mission.find(UUIDTools::UUID.parse(params[:mission_id]))
 		end
 end

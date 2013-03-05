@@ -11,25 +11,36 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130219073201) do
+ActiveRecord::Schema.define(:version => 20130305001043) do
 
-  create_table "logs", :force => true do |t|
-    t.text     "message"
+  create_table "actions", :id => false, :force => true do |t|
+    t.uuid     "id",        :primary_key => true
+    t.string   "type"
+    t.uuid     "reference"
     t.datetime "when"
-    t.integer  "mission_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.string   "source"
+    t.text     "data"
+  end
+
+  create_table "dummy", :force => true do |t|
+    t.string "title"
+  end
+
+  create_table "logs", :id => false, :force => true do |t|
+    t.uuid     "id",                         :primary_key => true
+    t.text     "message",    :null => false
+    t.datetime "when",       :null => false
+    t.uuid     "mission_id", :null => false
   end
 
   add_index "logs", ["mission_id"], :name => "index_logs_on_mission_id"
 
-  create_table "missions", :force => true do |t|
+  create_table "missions", :id => false, :force => true do |t|
+    t.uuid     "id",      :primary_key => true
     t.string   "title"
     t.datetime "started"
     t.string   "number"
     t.string   "county"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
   end
 
 end

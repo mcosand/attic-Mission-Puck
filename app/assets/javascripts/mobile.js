@@ -42,7 +42,7 @@ ko.bindingHandlers.jqmButtonEnabled = {
     val = valueAccessor();
     $(element).toggleClass('ui-disabled', !ko.utils.unwrapObservable(val));
     list = $(element).closest('.ui-listview');
-    if (list.length > 0) $(list[0]).listview('refresh');
+    if (list.length > 0 && $(list[0]).data("listview")) $(list[0]).listview('refresh');
   }
 }
 

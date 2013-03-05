@@ -102,7 +102,7 @@ var PageModel = function(apiMission)
 		var r = isNaN(right.when) ? new Date(0) : right.when.getTime();
 		var val = 0;
 
-		val = (l == r) ? (left.id() < right.id() ? -1 : 1) : (l < r ? -1 : 1);
+		val = (l == r) ? (left.id < right.id ? -1 : 1) : (l < r ? -1 : 1);
 
 		return val;
   }
@@ -159,7 +159,7 @@ $(document).ready(function() {
 		data = JSON.parse(data)
 		if (data.mission_id != model.mission.id) return;
 		if (console.log) console.log(data);
-		model.logs.push(new LogModel(data.id, data.message, new XDate(data.when)));
+		model.logs.push(convertToDate(data, ['when']));
 		model.logs.sort(model.logsSort);
   	if (model.doAutoScroll()) $('#saveLogButton')[0].scrollIntoView();
 	});
