@@ -16,4 +16,44 @@ class MissionsController < ApplicationController
     count = params[:id] || 1
     render :json => Mission.find(:all, :limit => count, :order => 'started DESC')
   end
+
+  def new
+
+  end
+
+  def create
+    act = CreateMissionAction.new(:data => params[:mission], :when => Time.now, :source => "@#{`hostname`.strip}")
+
+    val = false
+    act.transaction do
+      val = act.perform
+      act.save
+    end
+    
+    respond_to do |format|
+      if val
+        broadcast "/missions/new", act.created.to_json
+
+        format.html # new.html.erb
+        format.json { render :json => act.created }
+      else
+        format.html { render :action => "new" }
+        format.json { render :json => act.created.errors, :status => :unprocessable_entity }
+      end
+    end
+  end
+
+  def destroy
+    m = Mission.find(params[:id])
+    act = DestroyMissionAction.new(:data => m.id.to_json, :when => Time.now, :source => "@{`hostname`.strip}")
+
+    act.transaction do
+      act.perform
+      act.save
+    end
+
+    broadcast "/missions/delete", params[:id]
+    render :json => params[:id]
+  end
+
 end

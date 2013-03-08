@@ -1,19 +1,20 @@
 class LogsController < ApplicationController
-	before_filter :find_mission
+  before_filter :find_mission
 
-	before_filter :check_for_mobile
+  before_filter :check_for_mobile
 
-	def index
-		@logs = @mission.logs.all( :order => '"when" DESC')
-		respond_to do |format|
-			format.html # index.html.erb
-			format.json { render :json => @logs }
-		end
-	end
+  def index
+    @logs = @mission.logs.all( :order => '"when" DESC')
+    respond_to do |format|
+      format.html # index.html.erb
+      format.json { render :json => @logs }
+    end
+  end
 
-	def create
-		log = @mission.logs.build(params[:log])
-    act = CreateLogAction.new(:data => log.to_json, :when => Time.now, :source => "@#{`hostname`.strip}")
+  def create
+    args = params[:log]
+    args['mission_id'] = @mission.id.to_s
+    act = CreateLogAction.new(:data => args, :when => Time.now, :source => "@#{`hostname`.strip}")
 
     val = false
     act.transaction do
@@ -21,20 +22,18 @@ class LogsController < ApplicationController
       act.save
     end
 
-    log = @mission.logs.find(act.reference)
+    respond_to do |format|
+      if val
+        broadcast "/logs/new", act.created.to_json
 
-		respond_to do |format|
-			if val
-		    broadcast "/logs/new", log.to_json
-
-				format.html # new.html.erb
-				format.json { render :json => log }
-			else
-				format.html { render :action => "new" }
-				format.json { render :json => log.errors, :status => :unprocessable_entity }
-			end
-		end
-	end
+        format.html # new.html.erb
+        format.json { render :json => act.created }
+      else
+        format.html { render :action => "new" }
+        format.json { render :json => act.created.errors, :status => :unprocessable_entity }
+      end
+    end
+  end
 
   def destroy
     log = @mission.logs.find(params[:id])
@@ -49,8 +48,8 @@ class LogsController < ApplicationController
     render :json => params[:id]
   end
 
-	private
-		def find_mission
-			@mission = Mission.find(UUIDTools::UUID.parse(params[:mission_id]))
-		end
+  private
+    def find_mission
+      @mission = Mission.find(UUIDTools::UUID.parse(params[:mission_id]))
+    end
 end

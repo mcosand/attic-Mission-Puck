@@ -6,23 +6,23 @@
   </thead>
   <tbody data-bind="foreach: {data: logs, afterAdd: highlightRow}">
     <tr data-bind="css: { odd: $index() % 2 != 0 }">
-			<td class="r"><span data-bind="text:getMissionDateOffset(when)"></span><span data-bind="text:when.toString('HH:mm')" class="b"></span></td>
-			<td data-bind="text:message"></td>
+      <td class="r"><span data-bind="text:getMissionDateOffset(when)"></span><span data-bind="text:when.toString('HH:mm')" class="b"></span></td>
+      <td data-bind="text:message"></td>
       <td><a href="#" data-bind="click: $parent.doDelete">Delete</a></td>
-		</tr>
+    </tr>
   </tbody>
-	<tfoot>
-		<tr>
-				<td style="vertical-align:top;">
-					<input type="text" class="r" data-bind="value: formattedWhen, disable:doUpdateWhen" style="width:6em;"></input><br/>
-					<input type="checkbox" id="autoUpdate" data-bind="checked: doUpdateWhen"/><label for="autoUpdate"> auto update</label>
-				</td>
-				<td>
-				  <textarea id="newMsg" data-bind="value: nextLogEntry, hasfocus: focusForm, event: { keyup: cancelScroll }, css: { errInput: nextLogErrors().message }, ctrlEnter: doSave" style="width:40em; height:4em;"></textarea><br/>
-					<div class="fieldErr" data-bind="visible: nextLogErrors().message, text: nextLogErrors().message"></div>
-				  <input id="saveLogButton" type="button" value="Save Log" data-bind="click: doSave" />
-				</td><td></td></tr>
-	</tfoot>
+  <tfoot>
+    <tr>
+        <td style="vertical-align:top;">
+          <input type="text" class="r" data-bind="value: formattedWhen, disable:doUpdateWhen" style="width:6em;"></input><br/>
+          <input type="checkbox" id="autoUpdate" data-bind="checked: doUpdateWhen"/><label for="autoUpdate"> auto update</label>
+        </td>
+        <td>
+          <textarea id="newMsg" data-bind="value: nextLogEntry, hasfocus: focusForm, event: { keyup: cancelScroll }, css: { errInput: nextLogErrors().message }, ctrlEnter: doSave" style="width:40em; height:4em;"></textarea><br/>
+          <div class="fieldErr" data-bind="visible: nextLogErrors().message, text: nextLogErrors().message"></div>
+          <input id="saveLogButton" type="button" value="Save Log" data-bind="click: doSave" />
+        </td><td></td></tr>
+  </tfoot>
 </table>
 <form id="newLogForm" data-bind="with: nextLogEntry">
 </form>
@@ -39,108 +39,108 @@
 <script>
 var MissionModel = function(apiModel)
 {
-	var self = this;
-	this.id = apiModel.id
-	this.started = ko.observable(new XDate(apiModel.started, true))
-	this.title = ko.observable(apiModel.title)
-	this.number = ko.observable(apiModel.number)
+  var self = this;
+  this.id = apiModel.id
+  this.started = ko.observable(new XDate(apiModel.started, true))
+  this.title = ko.observable(apiModel.title)
+  this.number = ko.observable(apiModel.number)
 }
 
 var model;
 var getMissionDateOffset = function(t)
 {
   if (model && model.mission && model.mission.started())
-	{
-		var d = model.mission.started();
-		d.clearTime();
-		var t2 = t.clone().clearTime();
+  {
+    var d = model.mission.started();
+    d.clearTime();
+    var t2 = t.clone().clearTime();
 
-		var diff = d.diffDays(t2);
-  	return diff ? diff + '+' : '';
-	}
-	return t ? t.toString('MMM dd ') : '';
+    var diff = d.diffDays(t2);
+    return diff ? diff + '+' : '';
+  }
+  return t ? t.toString('MMM dd ') : '';
 }
 
 var PageModel = function(apiMission)
 {
   var self = this;
-	this.mission = new MissionModel(apiMission);
+  this.mission = new MissionModel(apiMission);
 
   this.logs = ko.observableArray();
-	this.nextLogEntry = ko.observable('');
-	this.nextLogWhen = ko.observable(new XDate());
-	this.nextLogErrors = ko.observable({});
-	this.formattedWhen = ko.computed({
-		read: function() { 
-			var d = this.nextLogWhen();
-			return getMissionDateOffset(d) + d.toString('HH:mm');
-		},
+  this.nextLogEntry = ko.observable('');
+  this.nextLogWhen = ko.observable(new XDate());
+  this.nextLogErrors = ko.observable({});
+  this.formattedWhen = ko.computed({
+    read: function() { 
+      var d = this.nextLogWhen();
+      return getMissionDateOffset(d) + d.toString('HH:mm');
+    },
     write: function(value) {
-			m = value.match(/^(([\+-]?\d{1,2})\+)?([0-2]?\d)\:([0-5]\d)$/);
-			var d = this.mission.started().clone();
-			d.clearTime();
-			if (m[2]) d = d.addDays(m[2]);
-			d.setHours(m[3]);
-			d.setMinutes(m[4]);
+      m = value.match(/^(([\+-]?\d{1,2})\+)?([0-2]?\d)\:([0-5]\d)$/);
+      var d = this.mission.started().clone();
+      d.clearTime();
+      if (m[2]) d = d.addDays(m[2]);
+      d.setHours(m[3]);
+      d.setMinutes(m[4]);
 
-			this.nextLogWhen(d);
-		},
-		owner: this});
+      this.nextLogWhen(d);
+    },
+    owner: this});
 
-	this.focusForm = ko.observable(true);
-	this.doUpdateWhen = ko.observable(true);
+  this.focusForm = ko.observable(true);
+  this.doUpdateWhen = ko.observable(true);
   this.doAutoScroll = ko.observable(true);
 
-	this.highlightRow = function(domNode)
-	{
-		$(domNode).filter('tr').effect('highlight', 5000);
-	}
-
-	this.logsSort = function(left, right)
+  this.highlightRow = function(domNode)
   {
-		var l = isNaN(left.when) ? new Date(0) : left.when.getTime();
-		var r = isNaN(right.when) ? new Date(0) : right.when.getTime();
-		var val = 0;
-
-		val = (l == r) ? (left.id < right.id ? -1 : 1) : (l < r ? -1 : 1);
-
-		return val;
+    $(domNode).filter('tr').effect('highlight', 5000);
   }
 
-	this.cancelScroll = function(model,evt)
-	{
-		if (self.doAutoScroll() && evt.keyCode != 9)
-		{
- 			self.doAutoScroll(false);
-			$('#controlPanel').effect('highlight', { color: 'pink' }, 2000);
-		}
+  this.logsSort = function(left, right)
+  {
+    var l = isNaN(left.when) ? new Date(0) : left.when.getTime();
+    var r = isNaN(right.when) ? new Date(0) : right.when.getTime();
+    var val = 0;
+
+    val = (l == r) ? (left.id < right.id ? -1 : 1) : (l < r ? -1 : 1);
+
+    return val;
+  }
+
+  this.cancelScroll = function(model,evt)
+  {
+    if (self.doAutoScroll() && evt.keyCode != 9)
+    {
+       self.doAutoScroll(false);
+      $('#controlPanel').effect('highlight', { color: 'pink' }, 2000);
+    }
   }
 
   this.doDelete = function(model)
   {
     $.ajax({ type: 'DELETE', url: siteRoot + 'missions/' + model.mission_id + '/logs/' + model.id + '.json', dataType: 'JSON', contentType:'application/json; charset=utf-8'})
-		.done(function() {
+    .done(function() {
     });
   }
 
-	this.doSave = function()
-	{
-		self.nextLogErrors({});
-		$.ajax({ type: 'POST', url: '<%= mission_path(@mission) %>/logs.json', data: '{"log":' +ko.toJSON({message: self.nextLogEntry(), when: self.nextLogWhen().toString('yyyy-MM-dd HH:mm:ss')})+'}', dataType: 'JSON', contentType:'application/json; charset=utf-8'})
-			.done(function(result) {
-				self.nextLogEntry('');
-				$('#saveLogButton')[0].scrollIntoView();
-				self.focusForm(true);
-			})
-			.fail(function(jhr) {
-				if (jhr.status == 422) {
-					self.nextLogErrors($.parseJSON(jhr.responseText));
-//					var errors = JSON.parse(jhr.responseText);
-				}
-				else { alert('General Error: ' + jhr.responseText); }
-			})
-			;
-	}
+  this.doSave = function()
+  {
+    self.nextLogErrors({});
+    $.ajax({ type: 'POST', url: '<%= mission_path(@mission) %>/logs.json', data: '{"log":' +ko.toJSON({message: self.nextLogEntry(), when: self.nextLogWhen().toString('yyyy-MM-dd HH:mm:ss')})+'}', dataType: 'JSON', contentType:'application/json; charset=utf-8'})
+      .done(function(result) {
+        self.nextLogEntry('');
+        $('#saveLogButton')[0].scrollIntoView();
+        self.focusForm(true);
+      })
+      .fail(function(jhr) {
+        if (jhr.status == 422) {
+          self.nextLogErrors($.parseJSON(jhr.responseText));
+//          var errors = JSON.parse(jhr.responseText);
+        }
+        else { alert('General Error: ' + jhr.responseText); }
+      })
+      ;
+  }
 }
 
 $(document).ready(function() {
@@ -148,25 +148,25 @@ $(document).ready(function() {
   model.nextLogWhen(new XDate());
 
 <% @logs.each do |log| %>
-	model.logs.push(convertToDate(<%= log.to_json.html_safe %>, ['when']));
+  model.logs.push(convertToDate(<%= log.to_json.html_safe %>, ['when']));
 <% end %>
-	model.logs.sort(model.logsSort);
+  model.logs.sort(model.logsSort);
 
-	ko.applyBindings(model);
+  ko.applyBindings(model);
 
   var faye = new Faye.Client('http://<%= request.host %>:9292/faye');
   faye.subscribe("/logs/new", function(data) {
-		data = JSON.parse(data)
-		if (data.mission_id != model.mission.id) return;
-		if (console.log) console.log(data);
-		model.logs.push(convertToDate(data, ['when']));
-		model.logs.sort(model.logsSort);
-  	if (model.doAutoScroll()) $('#saveLogButton')[0].scrollIntoView();
-	});
+    data = JSON.parse(data)
+    if (data.mission_id != model.mission.id) return;
+    if (console.log) console.log(data);
+    model.logs.push(convertToDate(data, ['when']));
+    model.logs.sort(model.logsSort);
+    if (model.doAutoScroll()) $('#saveLogButton')[0].scrollIntoView();
+  });
   faye.subscribe("/logs/delete", function(data) {
     model.logs.remove(function(f) { return f.id == data });
   });
 
-	window.setInterval(function() { if (model.doUpdateWhen()) model.nextLogWhen(new XDate()); }, 1000);
+  window.setInterval(function() { if (model.doUpdateWhen()) model.nextLogWhen(new XDate()); }, 1000);
 });
 </script>
