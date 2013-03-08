@@ -9,7 +9,7 @@
 //
 // WARNING: THE FIRST BLANK LINE MARKS THE END OF WHAT'S TO BE PROCESSED, ANY BLANK LINE SHOULD
 // GO AFTER THE REQUIRES BELOW.
-//
+
 //= require jquery-1.9.1.js
 //= require jquery.mobile-1.3.0.js
 //= require knockout-2.2.1.js
