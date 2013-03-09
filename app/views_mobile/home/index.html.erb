@@ -1,17 +1,41 @@
-<div data-role="header" data-position="fixed">
-  <h1>King Co. SAR</h1>
-  <a href="#" data-icon="bars" class="ui-btn-right">Menu</a>
+<div id="startPage" data-role="page">
+  <div data-role="header" data-position="fixed">
+    <h1>King Co. SAR</h1>
+    <a href="#" data-icon="bars" class="ui-btn-right">Menu</a>
+  </div>
+
+  <div data-role="content">
+  	<a href="#createPage" data-rel="dialog" data-role="button">Start New Mission</a>
+    <ul data-role="listview" data-inset="true" data-bind="foreach: app.recent, listViewRefresh: app.recent">
+      <li><a data-bind="text:title, attr: { href: '<%= root_url %>missions/' + id }" data-ajax="false"></a></li>
+    </ul>
+  </div>
 </div>
 
-<div data-role="content">
-	<a href="#createPage" data-role="button">Start New Mission</a>
-  <ul data-role="listview" data-inset="true" data-bind="foreach: recent, listViewRefresh: recent">
-    <li><a data-bind="text:title, attr: { href: '<%= root_url %>missions/' + id }" data-ajax="false"></a></li>
-  </ul>
+<div id="createPage" data-role="page">
+  <div data-role="header">
+    <h3>Start Mission</h3>
+  </div>
+  <div data-role="content">
+    <label for="createTitle">Title:</label>
+    <input id="createTitle" type="text" data-bind="value: m.title"></input>
+    <label for="createDate">Start Date:</label>
+    <input id="createDate" type="text" data-bind="value: m.started.formattedDate"></input>
+    <label for="createTime">Start Time:</label>
+    <input id="createTime" type="text" data-bind="value: m.started.formattedTime"></input>
+    <label for="createNumber">DEM#</label>
+    <input id="createNumber" type="text"></input>
+    <a href="#" data-role="button" data-bind="click: doStart" style="margin-top:4em;">Start</a>
+<span data-bind="text:m.started"></span>
+  </div>
 </div>
 
 <script type="text/javascript">
-var StartPageModel = function() {
+var StartPageModel = function(appModel) {
+  this.app = appModel;
+}
+
+var AppModel = function() {
   var self = this;
   this.recent = ko.observableArray();
 
@@ -24,12 +48,36 @@ var StartPageModel = function() {
   }
 }
 
-var model = new StartPageModel();
+var CreatePageModel = function() {
+  var self = this;
+  this.m = new MissionModel({});
+  this.m.started.initRounded();
 
-ko.applyBindings(model);
+  this.doStart = function()
+  {
+    $.ajax({type:'POST', url: siteRoot+'missions.json', data: '{"mission": '+ko.toJSON(self.m)+'}', dataType: 'JSON', contentType:'application/json; charset=utf-8'})
+    .done(function(result) {
+      window.location.href = siteRoot + 'missions/' + result.id + '?mobile=1';
+    });
+  }
+}
+
+var appModel = new AppModel({});
+var models = { };
+
+$('[data-role="page"]').on('pagecreate', function(a) {
+log('create page ' + a.target.id);
+  var model = models[a.target.id];
+  if (model) { ko.applyBindings(model, a.target); }
+ });
 
 $(document).ready(function() {
-  model.loadRecent();
+  appModel.loadRecent();
 });
+
+models = {
+  startPage: new StartPageModel(appModel),
+  createPage: new CreatePageModel(appModel),
+};
 
 </script>

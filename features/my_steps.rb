@@ -1,10 +1,15 @@
+require 'capybara-screenshot/cucumber'
 
 Given /^there is an active mission "(.*?)"$/ do |title|
 	FactoryGirl.create(:mission, :title => title)
 end
 
 Given /^I am on the homepage$/ do
-  visit '/'
+  visit '/?mobile=0'
+end
+
+Given /^I am on the homepage as mobile$/ do
+  visit '/?mobile=1'
 end
 
 When /^I follow "(.*?)"$/ do |link|
@@ -33,8 +38,14 @@ When /^I take a screenshot$/ do
 end
 
 When /^I fill out the new mission form with title "(.*?)"$/ do |title|
-  fill_in('txtTitle', :with => title)
-  click_button('Start')
+  fill_in('createTitle', :with => title)
+  if (has_button?('Start')) then
+    click_button('Start')
+  else
+    within('div#createPage') do 
+      click_link('Start')
+    end
+  end
 end
 
 Then /^the page should show a mission called "(.*?)"$/ do |title|

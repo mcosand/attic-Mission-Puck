@@ -7,36 +7,21 @@ message"></div>
 -->
 
 <table>
-<tr><td><label for="txtTitle">Title</label></td>
-  <td><input id="txtTitle" type="text" data-bind="value:mission.title, css: { errInput: errors().title }"/>
+<tr><td><label for="createTitle">Title</label></td>
+  <td><input id="createTitle" type="text" data-bind="value:mission.title, css: { errInput: errors().title }"/>
 <span data-bind="visible: errors().title, text: errors().title" class="fieldErr"></span></td></tr>
 
 <tr><td><label for="txtWhen">Started</label></td>
 <td><input id="txtWhen" type="text" data-bind="value:mission.started.formatted, css: {errInput: errors().started }"/>
 <span data-bind="visible: errors().started, text: errors().started" class="fieldErr"></span></td></tr>
 
-<tr><td><label for="txtNumber">DEM#</label></td>
-<td><input id="txtNumber" type="text" data-bind="value:mission.number, css:{errInput:errors().number}"/>
+<tr><td><label for="createNumber">DEM#</label></td>
+<td><input id="createNumber" type="text" data-bind="value:mission.number, css:{errInput:errors().number}"/>
 <span data-bind="visible: errors().number, txt: errors().number" class="fieldErr"></span></td></tr>
 </table>
 <button data-bind="click:doSave">Start</button>
 
 <script type="text/javascript">
-var MissionModel = function(apiModel)
-{
-  var self = this;
-  this.id = apiModel.id
-  this.started = ko.observable(apiModel.started ? new XDate(apiModel.started, true) : undefined)
-  this.title = ko.observable(apiModel.title)
-  this.number = ko.observable(apiModel.number)
-
-  this.started.formatted = ko.computed({
-    read: function() { return this.started() ? this.started().toString("yyyy-MM-dd HH:mm") : ""; },
-    write: function(value) { this.started(new XDate(value)); },
-		owner: this
-  });
-}
-
 var PageModel = function()
 {
   var self = this;

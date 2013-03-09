@@ -16,6 +16,7 @@
 //= require knockout-2.2.1.js
 //= require xdate.js
 //= require common.js
+//= require models.js
 
 ko.bindingHandlers.ctrlEnter = {
 	init: function (element, valueAccessor, allBindingsAccessor, viewModel) {

@@ -37,15 +37,6 @@
 <script type="text/javascript" src="http://<%= request.host %>:9292/faye.js"></script>
 
 <script>
-var MissionModel = function(apiModel)
-{
-  var self = this;
-  this.id = apiModel.id
-  this.started = ko.observable(new XDate(apiModel.started, true))
-  this.title = ko.observable(apiModel.title)
-  this.number = ko.observable(apiModel.number)
-}
-
 var model;
 var getMissionDateOffset = function(t)
 {

@@ -15,6 +15,7 @@
 //= require knockout-2.2.1.js
 //= require xdate.js
 //= require common.js
+//= require models.js
 
 // To help mobile dev on the desktop
 $(window).resize(function() {
