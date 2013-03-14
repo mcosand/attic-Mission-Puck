@@ -3,25 +3,81 @@
 <h1>King Co. SAR</h1>
 <a href="#" data-icon="bars" class="ui-btn-right">Menu</a>
 </script>
-
-<div id="frontPage" data-role="page">
+<div id="frontPage" data-role="page" data-theme="d">
 <div data-role="header" data-bind="template: { name: 'headerTmpl' }" data-position="fixed"></div>
 <div data-role="content">
-  <p data-bind="text:app.mission().title"></p>
-  <a href="#signinPage" data-role="button" class="ui-disabled">Sign In</a>
-<span data-bind="text: app.noBriefing"></span>
+  <h3 data-bind="text:app.mission().title" style="margin-top:0px"></h3>
+  <label style="font-weight:bold">Mission Information:</label>
   <ul data-role="listview" data-inset="true">
     <li><a href="#briefingPage" data-bind="jqmButtonEnabled: app.hasBriefing">Briefing</a></li>
     <li><a href="#rosterPage" class="ui-disabled">Roster</a></li>
     <li><a href="#logsPage">Mission Log</a></li>
   </ul>
+  <p for="frontResponder" style="font-weight:bold">Responder Sign-In/Out:</p>
+  <ul id="frontResponder" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="Enter Name or DEM#..." data-bind="event: { listviewbeforefilter: onResponderFilter }, foreach: responderSearchList, listViewRefresh: responderSearchList">
+  <li data-bind="click:$parent.selectResponder">
+    <a href="#signinPage">
+      <span data-bind="text:firstname"></span> <span data-bind="text:lastname" style="color:blue">
+    </a>
+    <a href="#responderInfoPage" data-rel="dialog" data-icon="info" data-theme="d" data-bind="click: $parent.app.selectResponder, visible: onMission || !isTemp">
+      Responder Details
+    </a>
+  </li>
+  </ul>
 </div>
 </div>
 <!-- ======================  -->
-<div id="signinPage" data-role="page" data-add-back-btn="true" >
+<div id="signinPage" data-role="page" data-add-back-btn="true" data-theme="d">
 <div data-role="header" data-bind="template: { name: 'headerTmpl' }" data-position="fixed"></div>
+<div data-role="content" data-bind="if: responder">
+  <h3 data-bind="text: responder().FullName" style="margin-top:0px"></h3>
+
+  <div data-role="fieldcontain">
+    <label for="signinStatus">New Status:</label>
+    <select id="signinStatus" data-bind="value:timeline.status">
+      <option value="signedin">Signed In</option>
+    </select>
+  </div>
+
+  <div data-role="fieldcontain" class="no-bottom-corners no-field-separator">
+    <label for="signinDate">Time:</label>
+    <select id="signinDate" data-mini="true" data-bind="options: dateOptions, optionsText: 't', optionsValue: 'v', value: timeline.time.date">
+    </select>
+  </div><div data-role="fieldcontain" class="no-top-corners">
+    <label for="signinTime"></label>
+    <input type="text" id="signinTime" style="text-align:center" placeholder="HH:MM" data-bind="value:timeline.time.time"></input>
+  </div>
+
+  <div data-role="fieldcontain">
+    <label for="signinMiles">Miles this leg:</label>
+    <input type="text" id="signinMiles" style="text-align:center" data-bind="value:timeline.miles">
+  </div>
+
+  <div data-role="fieldcontain">
+    <label for="signinUnit">Unit:</label>
+    <select id="signinUnit" data-bind="value:timeline.unit">
+      <option value="1234">ESAR</option>
+    </select>
+  </div>
+
+  <div data-role="fieldcontain">
+    <label for="signinRole">Mission Role:</label>
+    <select id="signinRole" data-bind="value:timeline.role">
+      <option value="field">Field</option>
+    </select>
+  </div>
+
+  <div style="padding-top:1em;">
+    <a href="#" data-role="button" data-bind="click: doPost">Sign In</a>
+  </div>
+ <p data-bind="text: responder().isTemp"></p>
+</div>
+</div>
+<!-- ======================  -->
+<div id="responderInfoPage" data-role="page" data-add-back-btn="true" data-theme="d">
+<div data-role="header"><h2>Member Name</h2></div>
 <div data-role="content">
-	Sign in page
+  <p data-bind="text:selectedResponder().lastname"></p>
 </div>
 </div>
 <!-- ======================  -->
@@ -38,7 +94,7 @@ My content
 </div>
 </div>
 <!-- ======================  -->
-<div id="logsPage" data-role="page" data-title="Mission Log">
+<div id="logsPage" data-role="page" data-title="Mission Log" data-theme="d">
 <div data-role="header" data-bind="template: { name: 'headerTmpl' }" data-position="fixed"></div>
 <div data-role="content" style="padding-left:5px; padding-top:5px;">
 <h3 style="margin-top:0px;">Mission Log</h3>
@@ -58,15 +114,141 @@ My content
 
 <script type="text/javascript" src="http://<%= request.host %>:9292/faye.js"></script>
 <script type="text/javascript">
+var statusTransitions = {
+  "Unknown": ["Activated","Enroute","Signedin","Unavailable","Signedout","Cleared"],
+  "Activated": ["Enroute","Signedin","Unavailable","Signedout","Cleared"],
+  "Enroute": ["Signedin", "Unavailable", "Signedout", "Cleared"],
+  "Signedin": ["Assigned", "Unavailable", "Signedout", "Cleared"],
+  "Assigned": ["Signedin", "Unavailable", "Signedout", "Cleared"],
+  "Unavailable": ["Signedin", "Signedout", "Cleared"],
+  "Signedout": ["Signedin", "Cleared"]
+}
+
+
+var ResponderStatusModel = function(apiModel)
+{
+  var self = this;
+  this.id = apiModel.id;
+  this.firstname = apiModel.firstname;
+  this.lastname = apiModel.lastname;
+  this.isTemp = apiModel.isTemp;
+  this.onMission = apiModel.onMission;
+  this.current = {};
+  this.current.role = ko.observable(apiModel.current ? apiModel.current.role : undefined);
+  this.current.unit = ko.observable(apiModel.current ? apiModel.current.unit : undefined);
+
+  this.FullName = ko.computed(function() { return this.firstname + " " + this.lastname; }, this);
+
+  this.getResponderModel = function()
+  {
+    return {firstname: self.firstname, lastname: self.lastname, number: self.number };
+  }
+}
+
+var RosterTimelineModel = function(apiModel)
+{
+  this.id = apiModel.id;
+  this.time = ko.observable(new XDate().setSeconds(0));
+  this.time.date = ko.computed({
+    read: function() { return this.time().clone().clearTime().getTime() },
+    write: function(value) {
+      t = this.time();
+      this.time(new XDate(value).addHours(t.getHours()).addMinutes(t.getMinutes()));
+    } ,
+    owner: this});
+  this.time.time = ko.computed({
+    read: function() { return this.time().toString("HH:mm") },
+    write: function(value) {
+      this.time(new XDate(this.time().toString("yyyy-MM-dd " + value)));    
+    },
+    owner: this});
+  this.status = ko.observable();
+  this.role = ko.observable();
+  this.miles = ko.observable();
+};
 
 var FrontPageModel = function(appModel) {
+  var self = this;
   this.app = appModel;
 	this.showBack = false;
+
+  this.selectResponder = function(model,evt,c,d)
+  {
+    self.app.selectedResponder(model);
+    return true;
+  }
+
+  this.responderSearchText = ko.observable();
+  this.responderSearchList = ko.observableArray();
+
+  this.onResponderFilter = function(model,evt,data)
+  {
+    model.responderSearchText($(data.input).val());
+  }
+
+  this.pendingSearch = null;
+
+  // A throttled event handler for when the responder search text changes.
+  // Will periodically execute the search against the server and update the
+  // list of matches.
+  ko.computed(function() {
+    if (this.pendingSearch) this.pendingSearch.abort();
+    val = this.responderSearchText();
+    if (val && val.length > 2)
+    {
+      var model = this;
+      this.pendingSearch = $.ajax({type: 'GET', 
+           url: siteRoot+'missions/' + self.app.mission().id + '/responders/search.json?q='+this.responderSearchText(),
+           dataType: 'JSON', contentType: 'application/json; charset=utf-8'})
+       .success(function(result) {
+         model.responderSearchList($.map(result, function(n) { return new ResponderStatusModel(n); }));
+       })
+       .complete(function() { this.pendingSearch = null; });
+    }
+    else
+    {
+      this.responderSearchList.removeAll();
+    }
+  }, this).extend({throttle: 200});
+
+  this.onPageCreate = function() {
+    // By default, the listview filter helps us out by removing items in the list that don't
+    // contain the search string. Under some conditions, this can cause the list to flicker
+    // while we wait for the AJAX call to come back. We're going to remove these items in the
+    // AJAX callback, so don't worry about it here (and don't flicker)
+//    $("#frontResponder").listview('option', 'filterCallback', function(a,b) { return false; });
+  };
 }
 
 var SigninPageModel = function(appModel) {
+  var self = this;
   this.app = appModel;
 	this.showBack = true;
+
+  this.responder = this.app.selectedResponder;
+
+  this.timeline = new RosterTimelineModel({});
+
+  this.dateOptions = [];
+  var d = new XDate().addDays(-2).clearTime();
+  for (var i = 0; i < 4; i++)
+  {
+    this.dateOptions.push({v: d.getTime(), t: d.toString("dddd, MMM dS")});
+    d.addDays(1);
+  } 
+
+  this.doPost = function() {
+    data = {timeline: self.timeline};
+    if (! self.timeline.responder_id) data.responder = this.responder().getResponderModel();
+    if (! self.timeline.unit_id) data.unit = {name: 'TEMP'};
+
+    $.ajax({type: 'POST',
+            url: siteRoot+'missions/' + self.app.mission().id + '/roster_timelines.json',
+            data: ko.toJSON(data),
+            dataType: 'JSON', contentType: 'application/json; charset=utf-8'})
+     .success(function(result) {
+     });
+  }
 }
 
 var LogsPageModel = function(appModel) {
@@ -103,6 +285,8 @@ var AppModel = function(mission)
   this.briefingText = ko.observable('');
   this.logs = ko.observableArray();
   this.loadingLogs = ko.observable(false);
+
+  this.selectedResponder = ko.observable();
 
   this.toastLogs = ko.observable(true);
 
@@ -146,7 +330,7 @@ var models = { };
 $('[data-role="page"]').on('pagecreate', function(a) {
 log('create page ' + a.target.id);
   var model = models[a.target.id];
-  if (model) { ko.applyBindings(model, a.target); }
+  if (model) ko.applyBindings(model, a.target);
  });
 
 var faye = null;
@@ -160,6 +344,13 @@ $(document).ready(function() {
     appModel.logs.remove(function(f) { return f.id == data });
   });
 
+  // By default, the listview filter helps us out by removing items in the list that don't
+  // contain the search string. Under some conditions, this can cause the list to flicker
+  // while we wait for the AJAX call to come back. We're going to remove these items in the
+  // AJAX callback, so don't worry about it here (and don't flicker)  
+  if ($("#frontResponder").data('listview')) 
+    $("#frontResponder").listview('option', 'filterCallback', function(a,b) { return false; });
+  
   setTimeout(function() {
     appModel.loadLogs();
   }, 1000);
@@ -173,6 +364,7 @@ appModel = new AppModel(<%= @mission.to_json.html_safe %>);
 models = {
   frontPage: new FrontPageModel(appModel),
   signinPage: new SigninPageModel(appModel),
+  responderInfoPage: appModel,
   logsPage: new LogsPageModel(appModel)
  };
 models.logDetailPage = models.logsPage;

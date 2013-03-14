@@ -23,6 +23,7 @@ end
 gem 'jquery-rails'
 gem 'activeuuid', :git => 'git://github.com/mcosand/activeuuid'
 gem 'uuidtools'
+gem 'classy_enum'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
@@ -51,10 +52,10 @@ group :test, :development do
 end
 
 group :test do
-	gem 'cucumber-rails'
+	gem 'cucumber-rails', require: false
 	gem 'capybara'
 	gem 'capybara-webkit'
 	gem 'capybara-screenshot'
-	gem 'database_cleaner'
+ 	gem 'database_cleaner'
 	gem 'factory_girl'
 end

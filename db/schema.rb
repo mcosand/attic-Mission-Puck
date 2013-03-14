@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130305001043) do
+ActiveRecord::Schema.define(:version => 20130310072948) do
 
   create_table "actions", :id => false, :force => true do |t|
     t.uuid     "id",        :primary_key => true
@@ -41,6 +41,33 @@ ActiveRecord::Schema.define(:version => 20130305001043) do
     t.datetime "started"
     t.string   "number"
     t.string   "county"
+  end
+
+  create_table "responders", :id => false, :force => true do |t|
+    t.uuid   "id",                         :primary_key => true
+    t.uuid   "mission_id", :null => false
+    t.uuid   "current_id"
+    t.uuid   "member_id"
+    t.string "firstname"
+    t.string "lastname"
+    t.string "number"
+  end
+
+  create_table "roster_timelines", :id => false, :force => true do |t|
+    t.uuid     "id",                           :primary_key => true
+    t.uuid     "responder_id", :null => false
+    t.uuid     "unit_id",      :null => false
+    t.string   "status"
+    t.string   "role"
+    t.datetime "time"
+    t.integer  "miles"
+  end
+
+  create_table "units", :id => false, :force => true do |t|
+    t.uuid   "id",         :primary_key => true
+    t.uuid   "mission_id"
+    t.string "name"
+    t.string "longname"
   end
 
 end
