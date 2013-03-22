@@ -47,8 +47,10 @@ class RosterTimelinesController < ApplicationController
      end
              
      if (success) then
-       broadcast "/responders/update", responder_id
-       render :json => timelineAction.created
+       json = timelineAction.created.responder.to_json(:include => { :current => {:include => { :unit => { :only => ["name"] } }, :except => ["id"] } })
+ 
+       broadcast "/responders/update", json
+       render :json => json
      else
        render :json => errors, :status => :unprocessable_entity
      end

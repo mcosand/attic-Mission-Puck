@@ -1,0 +1,69 @@
+<h2 style="margin-top:1.2em;"><span data-bind="text: mission.title"></span></h2>
+
+<h4>Mission Briefing</h4>
+<div data-bind="ifnot:isEditingBrief">
+<pre data-bind="text: mission.briefing">
+</pre>
+<input type="button" value="Edit Briefing" data-bind="click: editBrief" />
+</div>
+<div data-bind="if:isEditingBrief">
+<textarea data-bind="value: newBriefText" rows="10" cols="60"></textarea>
+<br/>
+<input type="button" value="Save Briefing" data-bind="click: saveBrief" />
+<input type="button" value="Cancel" data-bind="click: cancelBrief" />
+</div>
+
+<script type="text/javascript" src="http://<%= request.host %>:9292/faye.js"></script>
+
+<script>
+var model;
+
+var PageModel = function(apiMission)
+{
+  var self = this;
+  this.mission = new MissionModel(apiMission);
+
+  this.newBriefText = ko.observable();
+  this.isEditingBrief = ko.observable(false);
+
+  this.editBrief = function() {
+    var text = self.mission.briefing();
+    if (!text || text == "") text = briefTemplate
+       .replace("[Mission Name]", self.mission.title())
+       .replace("[Current Time]", new XDate().toString("yyyy-MM-dd HH:mm"));
+    self.newBriefText(text);
+    self.isEditingBrief(true);
+  };
+  
+  this.saveBrief = function() {
+//    self.nextLogErrors({});
+    $.ajax({ type: 'PUT', url: '<%= mission_path(@mission) %>.json', data: '{"mission":' +ko.toJSON({briefing: self.newBriefText})+'}', dataType: 'JSON', contentType:'application/json; charset=utf-8'})
+      .done(function(result) {
+        self.mission.briefing(result.briefing);
+        self.isEditingBrief(false);
+      })
+      .fail(function(jhr) {
+        if (jhr.status == 422) {
+//          self.nextLogErrors($.parseJSON(jhr.responseText));
+//          var errors = JSON.parse(jhr.responseText);
+        }
+        else { alert('General Error: ' + jhr.responseText); }
+      })
+      ;
+
+
+  };
+  this.cancelBrief = function() {
+    self.isEditingBrief(false);
+  };
+}
+
+$(document).ready(function() {
+  model = new PageModel($.parseJSON('<%= j(@mission.to_json.html_safe) %>'));
+
+  ko.applyBindings(model);
+
+  var faye = new Faye.Client('http://<%= request.host %>:9292/faye');
+});
+var briefTemplate = "[Mission Name]\nUpdated [Current Time]\n\nOverview:\n[summary]\n\nI/C: [enter name]\nOperations: [enter name]\nPlanning: [enter name]\n\nPrimary Frequency: [frequency details]\nMap Datum: [UTM NAD27, ddd mm.mmmm WGS84, etc]\n\nWeather Forecast:\n[report]\n\nSubject Description:\n[report]\n";
+</script>

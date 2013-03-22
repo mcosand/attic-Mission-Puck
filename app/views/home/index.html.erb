@@ -1,14 +1,15 @@
-<!-- ko if: activeMission -->
-<div style="box-shadow:rgba(10,10,10,0.5) 3px 3px 5px; border-radius:8px; border:solid 2px #444444; padding:5px; display:inline-block; margin-bottom:10px" data-bind="with:activeMission">
-<h2 data-bind="text:title" style="margin:0px;" />
-
-<h4><a data-bind="attr: { href: '<%= missions_path %>/' + id + '/logs' }">Logs</a></h4>
-
+<!-- ko foreach: recent -->
+<div style="box-shadow:rgba(10,10,10,0.5) 3px 3px 5px; border-radius:8px; border:solid 2px #444444; padding:5px; display:inline-block; margin-bottom:10px; width:20em">
+<h2 data-bind="text:title" style="margin:0px;" ></h2>
+<span data-bind="text:started.toString('yyyy-MM-dd HH:mm')" ></span>
+<h4>
+<a data-bind="attr: { href: '<%= missions_path %>/' + id}">Details</a>&nbsp;
+<a data-bind="attr: { href: '<%= missions_path %>/' + id + '/logs' }">Logs</a>&nbsp;
+<a data-bind="attr: { href: '<%= missions_path %>/' + id + '?mobile_once=1#rosterPage' }">Roster</a>
+</h4>
 </div><br/>
 <!-- /ko -->
-<!-- ko ifnot: activeMission -->
-<div>No active Missions</div>
-<!-- /ko -->
+<div data-bind="text: noMissionText"></div>
 
 <input type="button" value="Start New Mission" data-bind="click: doNewMission" />
 
@@ -17,21 +18,30 @@ var PageModel = function()
 {
 	var self = this;
 
-	this.activeMission = ko.observable();
+	this.recent = ko.observableArray();
+  this.noMissionText = ko.observable("Loading ...");
 
 	this.doNewMission = function()
 	{
 		window.location.href = '<%= new_mission_url %>';
 	}
+
+  this.loadRecent = function()
+  {
+    $.ajax({type:'GET', url: '<%= root_url %>missions/mostrecent/5'})
+     .done(function(result) {
+       $.each(result, function(i,val) { convertToDate(val, ['started']) });
+       self.recent(result);
+       self.noMissionText((result.length > 0) ? "" : "No recent missions");
+     });
+  }
 }
 
 
 $(document).ready(function() {
   var model = new PageModel();
-	<% if @activeMission %>
-	model.activeMission(new MissionModel(JSON.parse('<%= @activeMission.to_json.html_safe %>')));
-	<% end %>
   ko.applyBindings(model);
+  model.loadRecent();
 });
 
 </script>

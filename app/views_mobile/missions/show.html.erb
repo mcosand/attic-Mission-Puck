@@ -1,3 +1,30 @@
+<style type="text/css">
+#rosterPage div a.ui-table-columntoggle-btn { display: none; }
+td.roster-status { width: 2.5em; text-align:center; padding-right:0; }
+td.roster-status div { border-radius:.2em; -webkit-border-radius:.2em; -mox-border-radius:.2em; padding:.2em;}
+td.roster-status div img { width:16pt; height:16pt; }
+.roster-bg-enroute { background-color:#df7401; }
+.roster-bg-signedin { background-color:#008800; }
+.roster-bg-signedout { background-color:#0404b4; }
+.roster-bg-unavailable { background-color:#b40404; }
+.roster-bg-cleared { background-color:#000000; }
+@media screen and (min-width: 15em) {
+  #rosterPage table thead tr th.ui-table-priority-1,
+  #rosterPage table tbody tr td.ui-table-priority-1 {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 25em) {
+  #rosterPage table thead tr th.ui-table-priority-2,
+  #rosterPage table tbody tr td.ui-table-priority-2 {
+    display: table-cell;
+  }
+}
+
+
+.nw { white-space: nowrap; }
+.elps { overflow:hidden; white-space: nowrap; text-overflow: ellipsis }
+</style>
 <script id="headerTmpl" type="text/html">
 <a href="#" data-rel="back" data-bind="visible: showBack">Back</a>
 <h1>King Co. SAR</h1>
@@ -8,10 +35,10 @@
 <div data-role="content">
   <h3 data-bind="text:app.mission().title" style="margin-top:0px"></h3>
   <label style="font-weight:bold">Mission Information:</label>
-  <ul data-role="listview" data-inset="true">
+  <ul data-role="listview" data-inset="true" data-bind="listViewRefresh: app.responders">
     <li><a href="#briefingPage" data-bind="jqmButtonEnabled: app.hasBriefing">Briefing</a></li>
-    <li><a href="#rosterPage" class="ui-disabled">Roster</a></li>
-    <li><a href="#logsPage">Mission Log</a></li>
+    <li><a href="#rosterPage">Roster</a><span class="ui-li-count" data-bind="text: app.onSceneCount() + ' / ' + app.responders().length"></span></li>
+    <li><a href="#logsPage">Mission Log</a><span class="ui-li-count" data-bind="text: app.logs().length"></span></li>
   </ul>
   <p for="frontResponder" style="font-weight:bold">Responder Sign-In/Out:</p>
   <ul id="frontResponder" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="Enter Name or DEM#..." data-bind="event: { listviewbeforefilter: onResponderFilter }, foreach: responderSearchList, listViewRefresh: responderSearchList">
@@ -19,7 +46,7 @@
     <a href="#signinPage">
       <span data-bind="text:firstname"></span> <span data-bind="text:lastname" style="color:blue">
     </a>
-    <a href="#responderInfoPage" data-rel="dialog" data-icon="info" data-theme="d" data-bind="click: $parent.app.selectResponder, visible: onMission || !isTemp">
+    <a href="#responderInfoPage" data-rel="dialog" data-icon="info" data-theme="d" data-bind="click: $parent.app.selectResponder, visible: status != 'unknown'">
       Responder Details
     </a>
   </li>
@@ -35,7 +62,10 @@
   <div data-role="fieldcontain">
     <label for="signinStatus">New Status:</label>
     <select id="signinStatus" data-bind="value:timeline.status">
+      <option value="enroute">Enroute</option>
       <option value="signedin">Signed In</option>
+      <option value="signedout">Signed Out</option>
+      <option value="cleared">Cleared</option>
     </select>
   </div>
 
@@ -63,6 +93,8 @@
   <div data-role="fieldcontain">
     <label for="signinRole">Mission Role:</label>
     <select id="signinRole" data-bind="value:timeline.role">
+      <option value="intown">In Town</option>
+      <option value="base">Base</option>
       <option value="field">Field</option>
     </select>
   </div>
@@ -89,8 +121,24 @@
 <!-- ======================  -->
 <div id="rosterPage" data-role="page" data-title="Mission Roster">
 <div data-role="header" data-bind="template: { name: 'headerTmpl' }" data-position="fixed"></div>
-<div data-role="content">
-My content
+<div data-role="content" style="padding:0;">
+  <table data-role="table" data-mode="columntoggle" id="rosterTable" class="table-stripe ui-body-d" data-bind="tableRefresh: app.responders">
+    <thead><tr class="ui-bar-d">
+      <th></th>
+      <th data-priority="2" style="width:2em;">DEM #</th>
+      <th style="width:100%">Name</th>
+      <th data-priority="1" style="width:2em;">Unit</th>
+    </tr></thead>
+    <tbody data-bind="foreach: app.responders">
+      <tr><td class="roster-status"><div data-bind="css: 'roster-bg roster-bg-'+current.status"><img data-bind="attr: {src: siteRoot+'assets/status-icons/'+current.status+'.png', alt: current.status }" /></div></td>
+          <td data-priority="2" class="nw ui-table-priority-2" data-bind="text: 'DEM-' + number"></td>
+          <td data-bind="text: lastname + ', ' + firstname" class="b elps"></td>
+          <td data-priority="1" class="c nw ui-table-priority-1" data-bind="text: current.unit.name"></td>
+      </tr>
+    </tbody>
+
+  </table>
+  <p><span style="font-weight:bold;"><span data-bind="text:app.onSceneCount"></span> Current Responders</span> (<span data-bind="text:app.responders().length"></span> Total)</p>
 </div>
 </div>
 <!-- ======================  -->
@@ -132,7 +180,7 @@ var ResponderStatusModel = function(apiModel)
   this.firstname = apiModel.firstname;
   this.lastname = apiModel.lastname;
   this.isTemp = apiModel.isTemp;
-  this.onMission = apiModel.onMission;
+  this.status = apiModel.status;
   this.current = {};
   this.current.role = ko.observable(apiModel.current ? apiModel.current.role : undefined);
   this.current.unit = ko.observable(apiModel.current ? apiModel.current.unit : undefined);
@@ -227,7 +275,7 @@ var SigninPageModel = function(appModel) {
 
   this.responder = this.app.selectedResponder;
 
-  this.timeline = new RosterTimelineModel({});
+  this.timeline = new RosterTimelineModel({ status: this.responder.status });
 
   this.dateOptions = [];
   var d = new XDate().addDays(-2).clearTime();
@@ -239,6 +287,7 @@ var SigninPageModel = function(appModel) {
 
   this.doPost = function() {
     data = {timeline: self.timeline};
+    if (self.responder().id) data.timeline.responder_id = self.responder().id;
     if (! self.timeline.responder_id) data.responder = this.responder().getResponderModel();
     if (! self.timeline.unit_id) data.unit = {name: 'TEMP'};
 
@@ -277,6 +326,12 @@ var LogsPageModel = function(appModel) {
   }
 }
 
+var RosterPageModel = function(appModel) {
+  var self = this;
+  this.app = appModel;
+  this.showBack = true;
+}
+
 var AppModel = function(mission)
 {
   mission.started = new XDate(mission.started);
@@ -286,11 +341,35 @@ var AppModel = function(mission)
   this.logs = ko.observableArray();
   this.loadingLogs = ko.observable(false);
 
+  this.responders = ko.observableArray([]);
+  this.loadingRoster = ko.observable(false);
+
+  this.onSceneCount = ko.computed(function() {
+    var arr = this.responders();
+    var c = 0;
+    for (var i=0;i<arr.length; i++)
+ if (arr[i].current.status == "signedin")
+ c++;
+    return c;
+  }, this);
+
   this.selectedResponder = ko.observable();
 
   this.toastLogs = ko.observable(true);
 
   this.hasBriefing = ko.computed(function() { return this.briefingText() != ''; }, this);
+
+  this.loadRoster = function()
+  {
+    self.loadingRoster(true);
+    $.ajax({type:'GET', url: siteRoot+'missions/' + self.mission().id + '/responders.json' })
+     .done(function(result) {
+       self.responders(result);
+     })
+     .complete(function() {
+       self.loadingRoster(false);
+     });
+  }
 
   this.loadLogs = function()
   {
@@ -299,6 +378,8 @@ var AppModel = function(mission)
      .done(function(result) {
        for (var i=0; i<result.length; i++) result[i].when = new XDate(result[i].when);
        self.logs(result);
+     })
+     .complete(function() {
        self.loadingLogs(false);
      });
   }
@@ -343,7 +424,11 @@ $(document).ready(function() {
   faye.subscribe("/logs/delete", function(data) {
     appModel.logs.remove(function(f) { return f.id == data });
   });
-
+  faye.subscribe("/responders/update", function(data) {
+    data = JSON.parse(data);
+    if (data.current.status == "signedin") $.mobile.showToast(data.firstname + " " + data.lastname + " signed in.");
+    appModel.loadRoster();
+  });  
   // By default, the listview filter helps us out by removing items in the list that don't
   // contain the search string. Under some conditions, this can cause the list to flicker
   // while we wait for the AJAX call to come back. We're going to remove these items in the
@@ -353,6 +438,7 @@ $(document).ready(function() {
   
   setTimeout(function() {
     appModel.loadLogs();
+    appModel.loadRoster();
   }, 1000);
 });
 </script>
@@ -365,7 +451,8 @@ models = {
   frontPage: new FrontPageModel(appModel),
   signinPage: new SigninPageModel(appModel),
   responderInfoPage: appModel,
-  logsPage: new LogsPageModel(appModel)
+  logsPage: new LogsPageModel(appModel),
+  rosterPage: new RosterPageModel(appModel)
  };
 models.logDetailPage = models.logsPage;
 </script>

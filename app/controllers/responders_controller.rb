@@ -7,7 +7,7 @@ class RespondersController < ApplicationController
     responders = @mission.responders.all( :order => '"lastname" DESC, "firstname" DESC')
     respond_to do |format|
       format.html # index.html.erb
-      format.json { render :json => responders }
+      format.json { render :json => responders.as_json(:include => { :current => {:include => { :unit => { :only => ["name"] } }, :except => ["id"] } }) }
     end
   end
 
@@ -64,8 +64,16 @@ class RespondersController < ApplicationController
       (firstname, lastname) = ["", firstname]
     end
 
-    render :json => [{:firstname => firstname, :lastname => lastname, :isTemp => true, :onMission => true},
-    {:firstname => firstname, :lastname => lastname+'2', :isTemp => true, :onMission => false}]
+    # Find every member in the database that matches
+    # Add anyone on the mission that isn't from the database
+    # Add new temp responder
+
+    query = "lastname like ?" + (firstname ? " AND firstname like ?" : "")
+    
+    on_mission = @mission.responders.where(query, "#{lastname}%", "#{firstname}%")
+                 .concat(@mission.responders.where(query, "#{firstname}%", "#{lastname}%"))
+   
+    render :json => on_mission.map{|item| {:id => item.id, :firstname => item.firstname, :lastname => item.lastname, :isTemp => true, :status => item.current.status}}.concat([{:firstname => firstname, :lastname => lastname, :isTemp => true, :status => 'unknown'}])
   end
 
 

@@ -1,0 +1,33 @@
+th { text-align: left; position: relative; }
+tr.ui-bar-d th { border-right: solid 1px #aaaaaa }
+
+td { vertical-align: top; }
+
+.r { text-align: right; }
+.b { font-weight: bold; }
+
+.fieldErr { font-weight:bold; color:red; }
+.fieldErr:before { content: "*" }
+.errInput { background-color: #ffdddd; border:solid 2px red; }
+
+th.sorting { cursor: pointer }
+
+/* http://stackoverflow.com/questions/7067110/how-to-use-css-sprites-in-table-sorting-headers */
+.sorting:before {
+    display: block;
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    width: 7px;
+    height: 9px;
+    margin-top:-6px;
+    background: transparent url("sort.png") 0 0;
+}
+th.sorted:before {
+  background: transparent url("sort.png") 8 0;
+}
+
+th.ascending:before {
+  background: transparent url("sort.png") 16 0;
+}

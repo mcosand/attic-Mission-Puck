@@ -1,0 +1,10 @@
+http://mysitemyway.com/docs/index.php/Icon_Shortcodes
+http://mysitemyway.com/_shared/images/icons/inset_silver/User.png
+
+activated = Flag
+enroute = Car
+signedin = User
+assigned = Group
+cleared = House
+signedout = Exit
+unavailable = HourGlass

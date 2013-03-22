@@ -9,12 +9,11 @@
  * compiled file, but it's generally better to create a new file per style scope.
  *
  *= require_self
+ *= require common.css
  *= require smoothness/jquery-ui-1.10.1.custom.min.css
  */
 
 body { font-family: Helvetica, Verdana, Arial, sans-serif; }
-th { text-align: left; }
-td { vertical-align: top; }
 
 table.data-table { background-color: #f6f6f6; border-top:dotted 1px #7a7a7a; border-left:dotted 1px #7a7a7a; }
 table.data-table td, table.data-table th { padding: 8px; border-right:dotted 1px #7a7a7a; border-bottom:dotted 1px #7a7a7a; }
@@ -22,10 +21,10 @@ table.data-table tfoot tr, table.data-table thead tr { background-color: #d6d6d6
 
 table tbody tr.odd td { background:#e0e0e0; }
 
-.r { text-align: right; }
-.b { font-weight: bold; }
-
-.fieldErr { font-weight:bold; color:red; }
-.fieldErr:before { content: "*" }
-.errInput { background-color: #ffdddd; border:solid 2px red; }
-
+pre {
+ white-space: pre-wrap;       /* css-3 */
+ white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+ white-space: -pre-wrap;      /* Opera 4-6 */
+ white-space: -o-pre-wrap;    /* Opera 7 */
+ word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}

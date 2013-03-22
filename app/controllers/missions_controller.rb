@@ -15,6 +15,7 @@ class MissionsController < ApplicationController
   def mostrecent
     count = params[:id] || 1
     render :json => Mission.find(:all, :limit => count, :order => 'started DESC')
+                    .to_json(:only => [:id, :title, :number, :started])
   end
 
   def new
@@ -39,6 +40,29 @@ class MissionsController < ApplicationController
       else
         format.html { render :action => "new" }
         format.json { render :json => act.created.errors, :status => :unprocessable_entity }
+      end
+    end
+  end
+
+  def update
+    act = UpdateMissionAction.new(:data => params[:mission], :reference => UUIDTools::UUID.parse(params[:id]),
+                                  :when => Time.now, :source => "@#{`hostname`.strip}")
+
+    val = false
+    act.transaction do
+      val = act.perform
+      act.save
+    end
+
+    respond_to do |format|
+      if val
+        broadcast "/missions/update", act.model.id
+
+        format.html
+        format.json { render :json => act.model }
+      else
+        format.html { render :action => "edit" }
+        format.json { render :json => act.model.errors, :status => :unprocessable_entity }
       end
     end
   end

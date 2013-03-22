@@ -22,7 +22,10 @@ puts "@@@FINDME@@@ #{@created.inspect}"
 puts "@@@FINDME@@@ #{responder.errors.inspect}"
     end
 
-    if (v) then self.reference = @created.id end
+    if (v) then
+      self.reference = @created.id
+      @created.responder = responder
+    end
     v
   end
 end

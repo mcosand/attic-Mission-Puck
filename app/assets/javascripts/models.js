@@ -5,6 +5,7 @@ var MissionModel = function(apiModel)
   this.started = ko.observable(apiModel.started ? new XDate(apiModel.started, true) : undefined)
   this.title = ko.observable(apiModel.title)
   this.number = ko.observable(apiModel.number)
+  this.briefing = ko.observable(apiModel.briefing)
 
   this.started.formatted = ko.computed({
     read: function() { return this.started() ? this.started().toString("yyyy-MM-dd HH:mm") : ""; },

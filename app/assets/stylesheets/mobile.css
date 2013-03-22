@@ -10,6 +10,7 @@
  *
  *= require_self
  *= require jquery.mobile-1.3.0.css
+ *= require common.css
  */
 
 div.no-top-corners div div, div.no-top-corners div {
@@ -18,6 +19,7 @@ div.no-top-corners div div, div.no-top-corners div {
  -webkit-border-top-right-radius: 0px;
  -webkit-border-top-left-radius: 0px;
 }
+
 div.no-top-corners
 {
  margin-top:0px;

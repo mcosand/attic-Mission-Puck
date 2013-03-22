@@ -5,7 +5,7 @@ class Mission < ActiveRecord::Base
   has_many :units
   has_many :responders
 
-  attr_accessible :county, :number, :started, :title
+  attr_accessible :county, :number, :started, :title, :briefing
 
 	validates :title, :presence => true
 	validates :started, :presence => true

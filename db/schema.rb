@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130310072948) do
+ActiveRecord::Schema.define(:version => 20130320234356) do
 
   create_table "actions", :id => false, :force => true do |t|
     t.uuid     "id",        :primary_key => true
@@ -36,11 +36,12 @@ ActiveRecord::Schema.define(:version => 20130310072948) do
   add_index "logs", ["mission_id"], :name => "index_logs_on_mission_id"
 
   create_table "missions", :id => false, :force => true do |t|
-    t.uuid     "id",      :primary_key => true
+    t.uuid     "id",       :primary_key => true
     t.string   "title"
     t.datetime "started"
     t.string   "number"
     t.string   "county"
+    t.text     "briefing"
   end
 
   create_table "responders", :id => false, :force => true do |t|
