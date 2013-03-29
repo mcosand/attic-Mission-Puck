@@ -36,7 +36,6 @@ var PageModel = function(apiMission)
   };
   
   this.saveBrief = function() {
-//    self.nextLogErrors({});
     $.ajax({ type: 'PUT', url: '<%= mission_path(@mission) %>.json', data: '{"mission":' +ko.toJSON({briefing: self.newBriefText})+'}', dataType: 'JSON', contentType:'application/json; charset=utf-8'})
       .done(function(result) {
         self.mission.briefing(result.briefing);
@@ -44,8 +43,6 @@ var PageModel = function(apiMission)
       })
       .fail(function(jhr) {
         if (jhr.status == 422) {
-//          self.nextLogErrors($.parseJSON(jhr.responseText));
-//          var errors = JSON.parse(jhr.responseText);
         }
         else { alert('General Error: ' + jhr.responseText); }
       })

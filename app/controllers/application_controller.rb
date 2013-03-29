@@ -12,12 +12,13 @@ class ApplicationController < ActionController::Base
 	end
 
 	def mobile_device?
+    logger.info("User agent: #{request.user_agent}")
     if params[:mobile_once]
       true
 		elsif session[:mobile_override]
 			session[:mobile_override] == "1"
 		else
-			(request.user_agent =~ /Mobile|webOS/)
+			(request.user_agent =~ /Mobile|webOS|iPad/)
 		end
 	end
 	helper_method :mobile_device?

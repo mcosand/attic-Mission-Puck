@@ -69,7 +69,7 @@ class MissionsController < ApplicationController
 
   def destroy
     m = Mission.find(params[:id])
-    act = DestroyMissionAction.new(:data => m.id.to_json, :when => Time.now, :source => "@{`hostname`.strip}")
+    act = DestroyMissionAction.new(:data => m.id.as_json, :when => Time.now, :source => "@{`hostname`.strip}")
 
     act.transaction do
       act.perform

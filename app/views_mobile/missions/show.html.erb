@@ -100,9 +100,8 @@ td.roster-status div img { width:16pt; height:16pt; }
   </div>
 
   <div style="padding-top:1em;">
-    <a href="#" data-role="button" data-bind="click: doPost">Sign In</a>
+    <a href="#" data-role="button" data-bind="click: doPost, jqmButtonEnabled: !doingPost()">Sign In</a>
   </div>
- <p data-bind="text: responder().isTemp"></p>
 </div>
 </div>
 <!-- ======================  -->
@@ -116,6 +115,7 @@ td.roster-status div img { width:16pt; height:16pt; }
 <div id="briefingPage" data-role="page" data-title="Mission Briefing">
 <div data-role="header" data-bind="template: { name: 'headerTmpl' }" data-position="fixed"></div>
 <div data-role="content">
+<pre data-bind="text: app.mission().briefing"></pre>
 </div>
 </div>
 <!-- ======================  -->
@@ -277,6 +277,9 @@ var SigninPageModel = function(appModel) {
 
   this.timeline = new RosterTimelineModel({ status: this.responder.status });
 
+
+  this.doingPost = ko.observable(false);
+
   this.dateOptions = [];
   var d = new XDate().addDays(-2).clearTime();
   for (var i = 0; i < 4; i++)
@@ -286,6 +289,7 @@ var SigninPageModel = function(appModel) {
   } 
 
   this.doPost = function() {
+    self.doingPost(true);
     data = {timeline: self.timeline};
     if (self.responder().id) data.timeline.responder_id = self.responder().id;
     if (! self.timeline.responder_id) data.responder = this.responder().getResponderModel();
@@ -296,6 +300,9 @@ var SigninPageModel = function(appModel) {
             data: ko.toJSON(data),
             dataType: 'JSON', contentType: 'application/json; charset=utf-8'})
      .success(function(result) {
+       self.doingPost(false);
+       self.app.selectedResponder(null);
+       window.history.back();     
      });
   }
 }
@@ -326,7 +333,7 @@ var LogsPageModel = function(appModel) {
   }
 }
 
-var RosterPageModel = function(appModel) {
+var PageModel = function(appModel) {
   var self = this;
   this.app = appModel;
   this.showBack = true;
@@ -337,7 +344,7 @@ var AppModel = function(mission)
   mission.started = new XDate(mission.started);
   var self = this;
   this.mission = ko.observable(mission);
-  this.briefingText = ko.observable('');
+//  this.briefingText = ko.observable('');
   this.logs = ko.observableArray();
   this.loadingLogs = ko.observable(false);
 
@@ -357,7 +364,7 @@ var AppModel = function(mission)
 
   this.toastLogs = ko.observable(true);
 
-  this.hasBriefing = ko.computed(function() { return this.briefingText() != ''; }, this);
+  this.hasBriefing = ko.computed(function() { return this.mission().briefing && this.mission().briefing != ''; }, this);
 
   this.loadRoster = function()
   {
@@ -403,6 +410,13 @@ log(apiLog.message);
     return val;
   }
 
+  this.loadMission = function()
+  {
+    $.ajax({type:'GET', url: siteRoot+'/missions/' + self.mission().id + '.json' })
+     .done(function(result) {
+       self.mission(convertToDate(result, ['started']));
+     });
+  }
 }
 
 var appModel = new AppModel({});
@@ -426,9 +440,14 @@ $(document).ready(function() {
   });
   faye.subscribe("/responders/update", function(data) {
     data = JSON.parse(data);
+    if (appModel.mission().id != data.mission_id) return;
     if (data.current.status == "signedin") $.mobile.showToast(data.firstname + " " + data.lastname + " signed in.");
     appModel.loadRoster();
   });  
+  faye.subscribe("/missions/update", function(id) {
+    if (appModel.mission().id == id)
+      appModel.loadMission();
+  });
   // By default, the listview filter helps us out by removing items in the list that don't
   // contain the search string. Under some conditions, this can cause the list to flicker
   // while we wait for the AJAX call to come back. We're going to remove these items in the
@@ -447,12 +466,14 @@ $(document).ready(function() {
 <script type="text/javascript">
 appModel = new AppModel(<%= @mission.to_json.html_safe %>);
 
+pageModel = new PageModel(appModel);
 models = {
   frontPage: new FrontPageModel(appModel),
   signinPage: new SigninPageModel(appModel),
   responderInfoPage: appModel,
   logsPage: new LogsPageModel(appModel),
-  rosterPage: new RosterPageModel(appModel)
+  rosterPage: pageModel,
+  briefingPage: pageModel
  };
 models.logDetailPage = models.logsPage;
 </script>
