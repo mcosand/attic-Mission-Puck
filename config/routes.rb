@@ -15,7 +15,12 @@ Puck::Application.routes.draw do
     end
     resources :roster_timelines do
     end
-	end
+    resources :teams do
+      collection do
+        get 'builder', to: 'teams#builder'
+      end
+    end
+  end
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
