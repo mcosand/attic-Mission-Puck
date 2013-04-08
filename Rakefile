@@ -5,3 +5,8 @@
 require File.expand_path('../config/application', __FILE__)
 
 Puck::Application.load_tasks
+
+desc 'swap schema.rb/bak'
+task :schemaswap do
+  system('rm db/schema.rb && cp db/schema.bak db/schema.rb')
+end
