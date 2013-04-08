@@ -3,7 +3,7 @@ require 'rspec/rails'
 
 describe RosterTimelinesController, :type => :controller do
   before do
-    @mission = FactoryGirl.create(:mission)
+    @mission = create(:mission)
 #    @mission.id = UUIDTools::UUID.random_create
   end
 

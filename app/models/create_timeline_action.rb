@@ -14,12 +14,12 @@ class CreateTimelineAction < Action
     @created.status = j['status']
 
     v = @created.save!
-puts "@@@FINDME@@@ #{@created.inspect}"
+# puts "@@@FINDME@@@ #{@created.inspect}"
 
     if (responder.current == nil || responder.current.time < @created.time) then
       responder.current = @created
       responder.save
-puts "@@@FINDME@@@ #{responder.errors.inspect}"
+# puts "@@@FINDME@@@ #{responder.errors.inspect}"
     end
 
     if (v) then
