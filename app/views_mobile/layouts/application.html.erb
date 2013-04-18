@@ -5,7 +5,7 @@
   <%= stylesheet_link_tag    "mobile", :media => "all" %>
   <%= javascript_include_tag "mobile" %>
   <%= csrf_meta_tags %>
-  <script type="text/javascript">var siteRoot='<%= root_url %>';var fayeRoot='http://<%= request.host %>:9292/faye'</script>
+  <script type="text/javascript">var siteRoot='<%= root_url %>';var fayeRoot='<%= faye_url %>/faye'</script>
 </head>
 <body>
 <%= yield %>

@@ -1,3 +1,3 @@
 #!/bin/sh
 cd $(dirname $0)
-rackup faye.ru -E production
+IM_FAYE=true rackup -p 9292 -E production

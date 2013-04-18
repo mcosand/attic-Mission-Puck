@@ -160,7 +160,7 @@ td.roster-status div img { width:16pt; height:16pt; }
 </div>
 </div>
 
-<script type="text/javascript" src="http://<%= request.host %>:9292/faye.js"></script>
+<script type="text/javascript" src="<%= faye_url %>/faye.js"></script>
 <script type="text/javascript">
 var statusTransitions = {
   "Unknown": ["Activated","Enroute","Signedin","Unavailable","Signedout","Cleared"],

@@ -34,7 +34,7 @@
   <label for="autoScroll">Automatically scroll</label>
 </div>
 
-<script type="text/javascript" src="http://<%= request.host %>:9292/faye.js"></script>
+<script type="text/javascript" src="<%= faye_url %>/faye.js"></script>
 
 <script>
 var model;
@@ -145,7 +145,7 @@ $(document).ready(function() {
 
   ko.applyBindings(model);
 
-  var faye = new Faye.Client('http://<%= request.host %>:9292/faye');
+  var faye = new Faye.Client('<%= faye_url %>/faye');
   faye.subscribe("/logs/new", function(data) {
     data = JSON.parse(data)
     if (data.mission_id != model.mission.id) return;
