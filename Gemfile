@@ -57,5 +57,5 @@ group :test do
 	gem 'capybara-webkit'
 	gem 'capybara-screenshot'
  	gem 'database_cleaner'
-	gem 'factory_girl'
+	gem 'factory_girl_rails'
 end
