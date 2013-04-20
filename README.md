@@ -20,7 +20,7 @@ Installation
     cd puck
     bundle install
     rake db:migrate
-    IM_FAYE=true rails server &
+    ./run-faye.sh &
     rails server
 
 Configuration
