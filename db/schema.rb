@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(:version => 20130320234356) do
     t.text     "data"
   end
 
+
   create_table "dummy", :force => true do |t|
     t.string "title"
   end
@@ -44,6 +45,7 @@ ActiveRecord::Schema.define(:version => 20130320234356) do
     t.text     "briefing"
   end
 
+
   create_table "responders", :id => false, :force => true do |t|
     t.uuid   "id",                         :primary_key => true
     t.uuid   "mission_id", :null => false
@@ -53,6 +55,7 @@ ActiveRecord::Schema.define(:version => 20130320234356) do
     t.string "lastname"
     t.string "number"
   end
+
 
   create_table "roster_timelines", :id => false, :force => true do |t|
     t.uuid     "id",                           :primary_key => true
@@ -64,11 +67,13 @@ ActiveRecord::Schema.define(:version => 20130320234356) do
     t.integer  "miles"
   end
 
+
   create_table "units", :id => false, :force => true do |t|
     t.uuid   "id",         :primary_key => true
     t.uuid   "mission_id"
     t.string "name"
     t.string "longname"
   end
+
 
 end
