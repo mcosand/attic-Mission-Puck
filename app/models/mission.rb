@@ -4,6 +4,7 @@ class Mission < ActiveRecord::Base
   has_many :logs
   has_many :units
   has_many :responders
+  has_many :teams
 
   attr_accessible :county, :number, :started, :title, :briefing
 

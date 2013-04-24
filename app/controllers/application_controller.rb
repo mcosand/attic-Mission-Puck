@@ -1,6 +1,16 @@
 class ApplicationController < ActionController::Base
-  include ApplicationHelper
   protect_from_forgery
+
+  attr_accessor :enable_broadcast
+
+  def broadcast(channel, msg)
+    if (self.enable_broadcast == nil || self.enable_broadcast == true) then
+
+      message = {:channel => channel, :data => msg, :ext => {:auth_token => FAYE_TOKEN}}
+      uri = URI.parse("#{ENV['FAYE_URL'] || 'http://localhost:9292'}/faye")
+      Net::HTTP.post_form(uri, :message => message.to_json)
+    end
+  end
 
 	def check_for_mobile
 		session[:mobile_override] = params[:mobile] if params[:mobile]

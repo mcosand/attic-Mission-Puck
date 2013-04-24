@@ -12,40 +12,27 @@ class LogsController < ApplicationController
   end
 
   def create
-    args = params[:log]
-    args['mission_id'] = @mission.id.to_s
-    act = CreateLogAction.new(:data => args, :when => Time.now, :source => "@#{`hostname`.strip}")
-
-    val = false
-    act.transaction do
-      val = act.perform
-      act.save
-    end
-
+    cmd = Commands::UpdateCommand.make(nil, 'Log', params[:log])
+    cmd.data['keys'] = {:mission_id => @mission.id.as_json}
     respond_to do |format|
-      if val
-        broadcast "/logs/new", act.created.to_json
+      if cmd.execute
+        broadcast "/logs/new", cmd.model.to_json
 
-        format.html # new.html.erb
-        format.json { render :json => act.created }
+        format.html
+        format.json { render :json => cmd.model }
       else
         format.html { render :action => "new" }
-        format.json { render :json => act.created.errors, :status => :unprocessable_entity }
+        format.json { render :json => cmd.model.errors, :status => :unprocessable_entity }
       end
     end
   end
 
   def destroy
-    log = @mission.logs.find(params[:id])
-    act = DestroyLogAction.new(:data => {:id => log.id, :mission_id => log.mission_id}.to_json, :when => Time.now, :source => "@{`hostname`.strip}")
-
-    act.transaction do
-      act.perform
-      act.save
+    cmd = Commands::DestroyCommand.make(params[:id],'Log') 
+    if (cmd.execute) then
+      broadcast "/logs/delete", params[:id]
+      render :json => params[:id]
     end
-
-    broadcast "/logs/delete", params[:id]
-    render :json => params[:id]
   end
 
   private

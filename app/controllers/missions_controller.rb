@@ -23,61 +23,43 @@ class MissionsController < ApplicationController
   end
 
   def create
-    act = CreateMissionAction.new(:data => params[:mission], :when => Time.now, :source => "@#{`hostname`.strip}")
-
-    val = false
-    act.transaction do
-      val = act.perform
-      act.save
-    end
-    
+    cmd = Commands::UpdateCommand.make(nil, 'Mission', params[:mission])
+   
     respond_to do |format|
-      if val
-        broadcast "/missions/new", act.created.to_json
+      if cmd.execute
+        broadcast "/missions/new", cmd.model.to_json
 
         format.html # new.html.erb
-        format.json { render :json => act.created }
+        format.json { render :json => cmd.model }
       else
         format.html { render :action => "new" }
-        format.json { render :json => act.created.errors, :status => :unprocessable_entity }
+        format.json { render :json => cmd.model.errors, :status => :unprocessable_entity }
       end
     end
   end
 
   def update
-    act = UpdateMissionAction.new(:data => params[:mission], :reference => UUIDTools::UUID.parse(params[:id]),
-                                  :when => Time.now, :source => "@#{`hostname`.strip}")
-
-    val = false
-    act.transaction do
-      val = act.perform
-      act.save
-    end
+    cmd = Commands::UpdateCommand.make(params[:id], 'Mission', params[:mission])
 
     respond_to do |format|
-      if val
-        broadcast "/missions/update", act.model.id
+      if cmd.execute
+        broadcast "/missions/update", cmd.model.id
 
         format.html
-        format.json { render :json => act.model }
+        format.json { render :json => cmd.model }
       else
         format.html { render :action => "edit" }
-        format.json { render :json => act.model.errors, :status => :unprocessable_entity }
+        format.json { render :json => cmd.model.errors, :status => :unprocessable_entity }
       end
     end
   end
 
   def destroy
-    m = Mission.find(params[:id])
-    act = DestroyMissionAction.new(:data => m.id.as_json, :when => Time.now, :source => "@{`hostname`.strip}")
-
-    act.transaction do
-      act.perform
-      act.save
+    cmd = Commands::DestroyCommand.make(params[:id], 'Mission')
+    if (cmd.execute) then
+	    broadcast "/missions/delete", params[:id]
+	    render :json => params[:id]
     end
-
-    broadcast "/missions/delete", params[:id]
-    render :json => params[:id]
   end
 
 end

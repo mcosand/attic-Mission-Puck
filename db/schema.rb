@@ -11,9 +11,9 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130320234356) do
+ActiveRecord::Schema.define(:version => 20130421005135) do
 
-  create_table "actions", :id => false, :force => true do |t|
+  create_table "commands", :id => false, :force => true do |t|
     t.uuid     "id",        :primary_key => true
     t.string   "type"
     t.uuid     "reference"

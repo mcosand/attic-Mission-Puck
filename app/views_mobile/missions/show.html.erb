@@ -292,8 +292,8 @@ var SigninPageModel = function(appModel) {
     self.doingPost(true);
     data = {timeline: self.timeline};
     if (self.responder().id) data.timeline.responder_id = self.responder().id;
-    if (! self.timeline.responder_id) data.responder = this.responder().getResponderModel();
-    if (! self.timeline.unit_id) data.unit = {name: 'TEMP'};
+    if (! self.timeline.responder_id) data.timeline.responder = this.responder().getResponderModel();
+    if (! self.timeline.unit_id) data.timeline.unit = {name: 'TEMP'};
 
     $.ajax({type: 'POST',
             url: siteRoot+'missions/' + self.app.mission().id + '/roster_timelines.json',

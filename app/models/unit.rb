@@ -7,4 +7,6 @@ class Unit < ActiveRecord::Base
   has_many :responders, :through => :roster_timelines
 
   attr_accessible :longname, :name
+
+  validates :name, :presence => true
 end

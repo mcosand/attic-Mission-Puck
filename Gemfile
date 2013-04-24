@@ -49,6 +49,12 @@ end
 group :test, :development do
 	gem 'sqlite3'
 	gem 'rspec-rails', '~> 2.5'
+  gem 'simplecov', :require => false
+end
+
+group :development do
+  gem 'guard'
+  gem 'guard-rspec'
 end
 
 group :test do

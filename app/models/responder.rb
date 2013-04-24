@@ -7,5 +7,7 @@ class Responder < ActiveRecord::Base
   attr_accessible :firstname, :lastname, :number
 
   belongs_to :current, :class_name => 'RosterTimeline'
+  belongs_to :team
+
   has_many :timeline, :class_name => 'RosterTimeline'
 end

@@ -4,13 +4,13 @@ require 'rspec/rails'
 describe RosterTimelinesController, :type => :controller do
   before do
     @mission = FactoryGirl.create(:mission)
-#    @mission.id = UUIDTools::UUID.random_create
+    controller.enable_broadcast = false
   end
 
   it "testJSON" do
-    timeline = {:status => :enroute, :role => :field, :time => Time.now }
     responder = {:firstname => 'Joe', :lastname => 'Searcher', :number => 'S-1234'}
     unit = {:name => 'Alpha'}
+    timeline = {:status => :enroute, :role => :field, :time => Time.now, :responder => responder, :unit => unit }
     post :create, :mission_id => @mission.id.as_json, :format => :json,
       :timeline => timeline, :responder => responder, :unit => unit
 
