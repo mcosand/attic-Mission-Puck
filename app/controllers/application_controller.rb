@@ -3,10 +3,14 @@ class ApplicationController < ActionController::Base
 
   attr_accessor :enable_broadcast
 
-  def broadcast(channel, msg)
+  def broadcast(channel, json)
     if (self.enable_broadcast == nil || self.enable_broadcast == true) then
 
-      message = {:channel => channel, :data => msg, :ext => {:auth_token => FAYE_TOKEN}}
+      message = {
+        :channel => "/root",
+        :data => '{"target":"' + channel + '", "data":' + json + '}',
+        :ext => {:auth_token => FAYE_TOKEN}}
+
       uri = URI.parse("#{ENV['FAYE_URL'] || 'http://localhost:9292'}/faye")
 
       response = Net::HTTP.post_form(uri, :message => message.to_json)

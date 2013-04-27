@@ -21,6 +21,14 @@
 var sysTime = new XDate('<%= Time.now %>')
 $(document).ready(function() {
   if (sysTime.getTime() + 60 * 60 * 1000 < new Date().getTime()) needSetServerTime();
+
+  faye = new Faye.Client('<%= faye_url %>/faye');
+  faye.subscribe("/root", function(message) {
+log(message);
+    message = JSON.parse(message);
+    $('body').trigger('msg_' + message['target'], message['data']);
+  });
+
 });
 </script>
 </body>

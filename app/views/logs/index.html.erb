@@ -132,6 +132,16 @@ var PageModel = function(apiMission)
       })
       ;
   }
+
+  $('body').bind('msg_logs/new', function(evt, data) {
+    if (self.mission.id != data.mission_id) return;
+     self.logs.push(convertToDate(data, ['when']))
+     self.logs.sort(self.logsSort);
+     if (self.doAutoScroll()) $('#saveLogButton')[0].scrollIntoView();
+  });
+  $('body').bind('msg_logs/delete', function(evt, data) {
+    self.logs.remove(function(f) { return f.id == data });
+  });
 }
 
 $(document).ready(function() {
@@ -144,20 +154,6 @@ $(document).ready(function() {
   model.logs.sort(model.logsSort);
 
   ko.applyBindings(model);
-
-  var faye = new Faye.Client('<%= faye_url %>/faye');
-  faye.subscribe("/logs/new", function(data) {
-    data = JSON.parse(data)
-    if (data.mission_id != model.mission.id) return;
-    if (console.log) console.log(data);
-    model.logs.push(convertToDate(data, ['when']));
-    model.logs.sort(model.logsSort);
-    if (model.doAutoScroll()) $('#saveLogButton')[0].scrollIntoView();
-  });
-  faye.subscribe("/logs/delete", function(data) {
-    model.logs.remove(function(f) { return f.id == data });
-  });
-
   window.setInterval(function() { if (model.doUpdateWhen()) model.nextLogWhen(new XDate()); }, 1000);
 });
 </script>

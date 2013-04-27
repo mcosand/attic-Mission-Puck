@@ -27,7 +27,7 @@ class MissionsController < ApplicationController
    
     respond_to do |format|
       if cmd.execute
-        broadcast "/missions/new", cmd.model.to_json
+        broadcast "missions/new", cmd.model.to_json
 
         format.html # new.html.erb
         format.json { render :json => cmd.model }
@@ -43,7 +43,7 @@ class MissionsController < ApplicationController
 
     respond_to do |format|
       if cmd.execute
-        broadcast "/missions/update", cmd.model.id
+        broadcast "missions/update", cmd.model.id.to_json
 
         format.html
         format.json { render :json => cmd.model }
@@ -57,7 +57,7 @@ class MissionsController < ApplicationController
   def destroy
     cmd = Commands::DestroyCommand.make(params[:id], 'Mission')
     if (cmd.execute) then
-	    broadcast "/missions/delete", params[:id]
+	    broadcast "missions/delete", "\"#{params[:id]}\""
 	    render :json => params[:id]
     end
   end

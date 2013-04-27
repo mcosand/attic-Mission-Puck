@@ -16,7 +16,7 @@ class LogsController < ApplicationController
     cmd.data['keys'] = {:mission_id => @mission.id.as_json}
     respond_to do |format|
       if cmd.execute
-        broadcast "/logs/new", cmd.model.to_json
+        broadcast "logs/new", cmd.model.to_json
 
         format.html
         format.json { render :json => cmd.model }
@@ -30,7 +30,7 @@ class LogsController < ApplicationController
   def destroy
     cmd = Commands::DestroyCommand.make(params[:id],'Log') 
     if (cmd.execute) then
-      broadcast "/logs/delete", params[:id]
+      broadcast "logs/delete", "\"#{params[:id]}\""
       render :json => params[:id]
     end
   end
