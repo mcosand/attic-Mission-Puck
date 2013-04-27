@@ -52,6 +52,8 @@ class Commands::UpdateResponderStatusCommand < Commands::UpdateCommand
        $result = $result & @responder.save
      end
 
+     raise ActiveRecord::Rollback unless $result
+
      $result
   end
 end

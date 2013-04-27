@@ -37,7 +37,7 @@ td.roster-status div img { width:16pt; height:16pt; }
   <label style="font-weight:bold">Mission Information:</label>
   <ul data-role="listview" data-inset="true" data-bind="listViewRefresh: app.responders">
     <li><a href="#briefingPage" data-bind="jqmButtonEnabled: app.hasBriefing">Briefing</a></li>
-    <li><a href="#rosterPage">Roster</a><span class="ui-li-count" data-bind="text: app.onSceneCount() + ' / ' + app.responders().length"></span></li>
+    <li><a href="#rosterPage">Roster</a><span id="frontRosterCount" class="ui-li-count" data-bind="text: app.onSceneCount() + ' / ' + app.responders().length"></span></li>
     <li><a href="#logsPage">Mission Log</a><span class="ui-li-count" data-bind="text: app.logs().length"></span></li>
   </ul>
   <p for="frontResponder" style="font-weight:bold">Responder Sign-In/Out:</p>
@@ -417,6 +417,14 @@ log(apiLog.message);
        self.mission(convertToDate(result, ['started']));
      });
   }
+
+
+  $('body').bind('msg_responders/update', function(evt, data) {
+    if (self.mission().id != data.mission_id) return;
+     if (data.current.status == "signedin")
+       $.mobile.showToast(data.firstname + " " + data.lastname + " signed in.");
+     self.loadRoster();
+  });
 }
 
 var appModel = new AppModel({});
@@ -431,7 +439,12 @@ log('create page ' + a.target.id);
 var faye = null;
 $(document).ready(function() {
   faye = new Faye.Client(fayeRoot);
-  faye.subscribe("/logs/new", function(data) {
+  faye.subscribe("/root", function(message) {
+log(message);
+    message = JSON.parse(message);
+    $('body').trigger('msg_' + message['target'], message['data']);
+  });
+/*  faye.subscribe("/logs/new", function(data) {
     data = JSON.parse(data)
     appModel.pushLog(data);
   });
@@ -448,6 +461,7 @@ $(document).ready(function() {
     if (appModel.mission().id == id)
       appModel.loadMission();
   });
+*/
   // By default, the listview filter helps us out by removing items in the list that don't
   // contain the search string. Under some conditions, this can cause the list to flicker
   // while we wait for the AJAX call to come back. We're going to remove these items in the

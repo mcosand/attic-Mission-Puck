@@ -29,12 +29,16 @@ Capybara.javascript_driver = :webkit
 # 2) Set the value below to true. Beware that doing this globally is not
 # recommended as it will mask a lot of errors for you!
 #
-ActionController::Base.allow_rescue = false
+
+# Turning this on. Looks like some ajax calls are late to the party (after a test finishes)
+# and by the time they are executed the object they reference has been cleaned up. -mlc
+ActionController::Base.allow_rescue = true 
 
 # Remove/comment out the lines below if your app doesn't have a database.
 # For some databases (like MongoDB and CouchDB) you may need to use :truncation instead.
 begin
-  DatabaseCleaner.strategy = :transaction
+#  DatabaseCleaner.strategy = :transaction
+  DatabaseCleaner.strategy = :truncation
 rescue NameError
   raise "You need to add database_cleaner to your Gemfile (in the :test group) if you wish to use it."
 end

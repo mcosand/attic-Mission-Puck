@@ -1,11 +1,12 @@
 require 'capybara-screenshot/cucumber'
 
 Given /^there is an active mission "(.*?)"$/ do |title|
-	FactoryGirl.create(:mission, :title => title)
+	m = FactoryGirl.create(:mission, :title => title)
+  puts m.id.as_json
 end
 
 Given /^I am on the homepage$/ do
-  visit '/?mobile=0'
+  visit '/'
 end
 
 Given /^I am on the homepage as mobile$/ do
@@ -14,10 +15,16 @@ end
 
 When /^I follow "(.*?)"$/ do |link|
 	click_link(link)
+  page.should_not have_css('.ui-mobile-viewport-transitioning')
 end
 
 When /^I click "(.*?)"$/ do |text|
   click_button(text)
+end
+
+Then /^the page should say "(.*?)"$/ do |txt|
+  page.should have_content(txt)
+  page.should_not have_css('.ui-mobile-viewport-transitioning')
 end
 
 When /^I submit a log message "(.*?)"$/ do |msg|

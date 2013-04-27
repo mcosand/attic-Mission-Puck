@@ -9,10 +9,12 @@ class RosterTimelinesController < ApplicationController
 
     respond_to do |format|
       if cmd.execute
-        broadcast "/responders/update", cmd.model.to_json
+        json = cmd.responder.to_json(:include => { :current => {:include => { :unit => { :only => ["name"] } }, :except => ["id"] } })
+
+        broadcast "/root", '{"target":"' + "responders/update" + '", "data":' + json + '}'
 
         format.html
-        format.json { render :json => cmd.model }
+        format.json { render :json => {'mission_id' => @mission.id} }  #cmd.model }
       else
         format.html { render :action => "new" }
         format.json { render :json => cmd.model.errors, :status => :unprocessable_entity }
