@@ -142,6 +142,10 @@ GEM
       net-ssh (>= 2.6.5)
     nokogiri (1.5.9)
     pg (0.15.1)
+    poltergeist (1.1.1)
+      capybara (~> 2.0.1)
+      faye-websocket (~> 0.4, >= 0.4.4)
+      http_parser.rb (~> 0.5.3)
     polyglot (0.3.3)
     pry (0.9.12.1)
       coderay (~> 1.0.5)
@@ -253,6 +257,7 @@ DEPENDENCIES
   guard-rspec
   jquery-rails
   pg
+  poltergeist
   rails (= 3.2.12)
   rspec-rails (~> 2.5)
   rvm-capistrano

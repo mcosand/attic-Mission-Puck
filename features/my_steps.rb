@@ -1,8 +1,24 @@
 require 'capybara-screenshot/cucumber'
 
 Given /^there is an active mission "(.*?)"$/ do |title|
-	m = FactoryGirl.create(:mission, :title => title)
-  puts m.id.as_json
+	@mission = FactoryGirl.create(:mission, :title => title)
+  puts @mission.id.as_json
+end
+
+Given /^there is a responder "(.+?) (.+?)"$/ do |first,last|
+  cmd = Commands::UpdateResponderStatusCommand.make(@mission.id,
+    {'responder' => { 'first' => first, 'last' => last },
+     'unit' => { 'name' => 'ABC' },
+     'time' => Time.now,
+     'status' => :signedin,
+     'role' => :field
+    })
+
+  cmd.execute
+end
+
+Given /^I am on a desktop$/ do
+  page.driver.resize_window(1024,768)
 end
 
 Given /^I am on the homepage$/ do
@@ -38,6 +54,20 @@ end
 
 Then /^the page should report an invalid log message\.$/ do
   page.should have_content("can't be blank")
+end
+
+When /^I drag responder "(.+?)" to team "(.+?)"$/ do |responder,team|
+  r = find(:xpath, "//span[text()='#{responder}']")
+  t = find(:xpath, "//div[text()='#{team}']/..")
+  r.drag_to(t)
+end
+
+Then /^"(.+?)" should be on team "(.+?)"$/ do |responder,team|
+  find(:xpath, "//div[text()='#{team}']/..").should have_content(responder)
+end
+
+Then /^"(.+?)" should be in staging$/ do |responder|
+  find('#stagingPanel').should have_content(responder)
 end
 
 When /^I take a screenshot$/ do

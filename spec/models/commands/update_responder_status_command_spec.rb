@@ -8,7 +8,6 @@ describe Commands::UpdateResponderStatusCommand do
             'time' => Time.now,
             'status' => :signedin,
             'role' => :field,
-            'mission_id' => @m.id.as_json
            }
   end
 

@@ -1,18 +1,23 @@
 module MobileStepsHelper
   SAMPLE_AGENT_STRING = {
     "iPhone" => "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_0 like Mac OS X; en-us) AppleWebKit/532.9 (KHTML, like Gecko) Version/4.0.5 Mobile/8A293 Safari/6531.22.7",
-    "Android" => "HTC_Eris Mozilla/5.0 (Linux; U; Android 4.0; en-ca; Build/GINGERBREAD) AppleWebKit/528.5+ (KHTML, like Gecko) Version/3.1.2 Mobile Safari/525.20.1"
+    "Android" => "HTC_Eris Mozilla/5.0 (Linux; U; Android 4.0; en-ca; Build/GINGERBREAD) AppleWebKit/528.5+ (KHTML, like Gecko) Version/3.1.2 Mobile Safari/525.20.1",
+    "iPad" => "Mozilla/5.0(iPad; U; CPU OS 4_3 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8F191 Safari/6533.18.5"
+  }
+  DEVICE_VIEWPORTS = {
+    "iPhone" => [320,416],
+    "iPad" => [1024,748]
   }
 end
 World(MobileStepsHelper)
  
 Given /^my user agent is "(.+)"$/ do |agent|
-  add_headers({'User-Agent'=> agent})
+  page.driver.headers = { "User-Agent" => agent }
 end
  
 Given /^I have an? (.+)$/ do |phone_name|
-  add_headers("User-Agent" => MobileStepsHelper::SAMPLE_AGENT_STRING[phone_name])
-  page.driver.resize_window(320,416)
+  page.driver.headers = { "User-Agent" => MobileStepsHelper::SAMPLE_AGENT_STRING[phone_name] }
+  page.driver.resize_window(*MobileStepsHelper::DEVICE_VIEWPORTS[phone_name])
 end
 
 When /^I enter "(.+)" in the responder box$/ do |search_text|

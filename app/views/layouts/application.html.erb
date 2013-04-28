@@ -6,6 +6,7 @@
   <%= javascript_include_tag "application" %>
   <%= csrf_meta_tags %>
   <script type="text/javascript">var siteRoot='<%= root_url %>'</script>
+  <script type="text/javascript" src="<%= faye_url %>/faye.js"></script>
   <%= yield :head %>
 </head>
 <body>
