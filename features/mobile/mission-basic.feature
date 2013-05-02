@@ -11,8 +11,9 @@ Feature: Manage mission basics
   @javascript
   Scenario: Create Mission
     When I follow "Start New Mission"
-    And I fill out the new mission form with title "This is a new mission"
-    Then the page should show a mission called "This is a new mission"
+    And I fill out the new mission form with title "Mt Thompson Fallen Climber"
+    Then the page should show a mission called "Mt Thompson Fallen Climber"
+    When I take a screenshot
 
 #  @javascript
 #  Scenario: Empty log message

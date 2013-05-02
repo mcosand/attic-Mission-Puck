@@ -12,6 +12,7 @@ Feature: Mission logging
 	Scenario: Create log message
 		When I submit a log message "Log Test Message"
 		Then the page should show a log message "Log Test Message"
+    When I take a screenshot
 
 	@javascript
 	Scenario: Empty log message
