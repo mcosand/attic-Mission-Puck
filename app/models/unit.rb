@@ -9,4 +9,8 @@ class Unit < ActiveRecord::Base
   attr_accessible :longname, :name
 
   validates :name, :presence => true
+
+  def self.related_keys
+    ['mission_id']
+  end
 end

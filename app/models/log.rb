@@ -6,4 +6,8 @@ class Log < ActiveRecord::Base
 
   validates :message, :presence => true
 	validates :when, :presence => true
+
+  def self.related_keys
+    ['mission_id']
+  end
 end

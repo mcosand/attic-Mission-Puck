@@ -13,7 +13,6 @@ describe Commands::UpdateResponderStatusCommand do
 
   it "should create all objects on new responder" do
     cmd = Commands::UpdateResponderStatusCommand.make(@m.id, @args)
-   # cmd.data['keys'] = { 'mission_id' => m.id.as_json }
     cmd.execute
 
     @m = Mission.find(@m.id)

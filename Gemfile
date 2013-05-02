@@ -62,6 +62,6 @@ group :test do
 	gem 'capybara', '2.0.3'
 	gem 'capybara-screenshot'
  	gem 'database_cleaner'
-	gem 'factory_girl'
+	gem 'factory_girl_rails'
   gem 'poltergeist'
 end

@@ -14,4 +14,8 @@ class RosterTimeline < ActiveRecord::Base
   def self.assignable_attributes
     accessible_attributes.to_a.concat(['status', 'role'])
   end
+
+  def self.related_keys
+    ['responder_id','unit_id']
+  end
 end

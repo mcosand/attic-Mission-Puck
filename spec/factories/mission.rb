@@ -5,8 +5,4 @@ FactoryGirl.define do
 		m.number '13-1234'
 	end
 
-  factory :log do |t|
-    t.message 'Test message'
-    t.when Time.now
-  end
 end

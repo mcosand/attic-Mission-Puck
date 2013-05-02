@@ -10,4 +10,8 @@ class Responder < ActiveRecord::Base
   belongs_to :team
 
   has_many :timeline, :class_name => 'RosterTimeline'
+
+  def self.related_keys
+    ['mission_id']
+  end
 end

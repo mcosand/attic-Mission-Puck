@@ -13,7 +13,7 @@ class LogsController < ApplicationController
 
   def create
     cmd = Commands::UpdateCommand.make(nil, 'Log', params[:log])
-    cmd.data['keys'] = {:mission_id => @mission.id.as_json}
+    cmd.data['data']['mission_id'] = @mission.id.as_json
     respond_to do |format|
       if cmd.execute
         broadcast "logs/new", cmd.model.to_json

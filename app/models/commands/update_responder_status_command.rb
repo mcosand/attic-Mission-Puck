@@ -12,21 +12,21 @@ class Commands::UpdateResponderStatusCommand < Commands::UpdateCommand
       raise "mission_id not set" unless mission_id
       make_base(nil, {
         'type' => 'RosterTimeline',
-        'data' => data,
-        'keys' => { 'mission_id' => mission_id }
+        'data' => data.merge({ 'mission_id' => mission_id })
       })
     end
   end
 
   def internal_execute
      $result = true
+     mission_id = self.data['data']['mission_id']
 
      data = self.data['data']
      if (data['responder_id']) then
        @responder = Responder.find(data['responder_id'])
      else 
-       cmd = Commands::UpdateCommand.make(nil, 'Responder', data['responder'])
-       cmd.data['keys'] = {'mission_id' => self.data['keys']['mission_id'] }
+       cmd = Commands::UpdateCommand.make(nil, 'Responder',
+                       data['responder'].merge({'mission_id' => mission_id}))
        cmd.topmost = false
        $result = $result & cmd.execute
        @responder = cmd.model
@@ -35,16 +35,17 @@ class Commands::UpdateResponderStatusCommand < Commands::UpdateCommand
      if (data['unit_id']) then
        @unit = Unit.find(data['unit_id'])
      else
-       cmd = Commands::UpdateCommand.make(nil, 'Unit', data['unit'])
-       cmd.data['keys'] = {:mission_id => self.data['keys']['mission_id'] }
+       cmd = Commands::UpdateCommand.make(nil, 'Unit',
+                       data['unit'].merge({'mission_id' => mission_id}))
        cmd.topmost = false
        $result = $result & cmd.execute
        @unit = cmd.model
      end
 
      raise ActiveRecord::Rollback unless $result
-       
-     self.data['keys'] = {:responder_id => @responder.id, :unit_id => @unit.id }
+     
+     self.data['data']['responder_id'] = @responder.id  
+     self.data['data']['unit_id'] = @unit.id
      $result = $result & super
 
      if (@responder.current == nil || @responder.current.time < @model.time) then

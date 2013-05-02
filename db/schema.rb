@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130421005135) do
+ActiveRecord::Schema.define(:version => 20130429003423) do
 
   create_table "commands", :id => false, :force => true do |t|
     t.uuid     "id",        :primary_key => true
@@ -54,6 +54,7 @@ ActiveRecord::Schema.define(:version => 20130421005135) do
     t.string "firstname"
     t.string "lastname"
     t.string "number"
+    t.uuid   "team_id"
   end
 
 
@@ -65,6 +66,15 @@ ActiveRecord::Schema.define(:version => 20130421005135) do
     t.string   "role"
     t.datetime "time"
     t.integer  "miles"
+  end
+
+
+  create_table "teams", :id => false, :force => true do |t|
+    t.uuid   "id",                         :primary_key => true
+    t.uuid   "mission_id", :null => false
+    t.uuid   "leader_id"
+    t.string "name"
+    t.string "kind"
   end
 
 
