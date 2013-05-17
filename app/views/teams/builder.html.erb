@@ -40,7 +40,7 @@ body { font-family:arial; padding:0; margin:0 }
     color: #fff;
     border-radius: 3px;
     margin: 2px;
-    padding: 2px 4px;
+    padding: 6px 14px;
     text-align: center;
     cursor: move;
     min-width:120px;
@@ -91,7 +91,7 @@ body { font-family:arial; padding:0; margin:0 }
       <div data-bind="text: name" class="teamhead"></div>
       <div class="membership" data-bind="sortable: { template: 'responderTmpl', data: members, afterMove: $root.dropNew }"></div>
     </div>
-    <span class="panelLabel">Field Teams</span>
+    <span class="panelLabel">Field Teams <span data-bind="if: isLoading">-- loading</span></span>
   </div>
 </div>
 
@@ -124,57 +124,47 @@ var Team = function(apiModel)
   this.members.team = this;
 }
 
-var feed = {staging: [
-              {firstname: "Catherine", lastname: "Hoxie", current: { status: "signedin", role:"field" } },
-              {firstname:"Howard", lastname:"Salazar", current: { status: "signedin", role:"field" } }
-            ],
-            base: [
-              {firstname:"Mark", lastname:"Wesley", current: { status: "assigned", role:"field" } }
-            ],
-            unavailable: [
-            ],
-            teams: [
-              {name: "Alpha", members: [
-                {firstname:"Tiffany", lastname:"Chadwick", current: { status: "assigned", role:"field" } },
-                {firstname:"Betty", lastname:"Kulik", current: { status: "assigned", role:"field" } }
-              ]},
-              {name: "Bravo", members: [
-              ]}
-            ]
-          };
-
-var AppModel = function()
+var AppModel = function(mission)
 {
   var self = this;
+  this.mission = mission;
+  this.isLoading = ko.observable(false);
+
   this.teams = ko.observableArray([]);	
   this.staging = ko.observableArray([]);
   this.staging.targetStatus = "signedin";
   this.base = ko.observableArray([]);
   this.base.targetStatus = "assigned";
-  this.unavailable = ko.observableArray([]);
-  this.unavailable.targetStatus = "unavailable";
   
   this.newTeam = ko.observable(new Team({name:"New Team", members:[]}));
   
   this.dropContainer = function(arg) {
     console.log("drop base");
     self.setResponderStatus(arg.item, arg.targetParent.targetStatus);
-    self.checkEmptyTeam(arg.sourceParent);
+    keep = self.emptyTeamQuery(arg.sourceParent);
+    self.isLoading(true);
+    $.ajax({type:'PUT', url: siteRoot+'missions/' + self.mission.id + '/responders/' + arg.item.id + '/team/' + arg.targetParent.id + '.json' + (keep ? '?keep_team=true' : '')  })
+      .done(function(data) {
+self.load();
+      }).always(function() { self.isLoading(false) });
   }
 
   this.dropNew = function(arg) {
     var name = prompt("Team Name:");
     var team = new Team({name: name, members: []});
 
-    
-
     team.members.push(arg.item);
     
     self.teams.push(team);
     arg.targetParent.removeAll();		
     
-      self.setResponderStatus(arg.item, 'assigned');
-      self.checkEmptyTeam(arg.sourceParent);
+    self.setResponderStatus(arg.item, 'assigned');
+    keep = self.emptyTeamQuery(arg.sourceParent);
+    self.isLoading(true);
+    $.ajax({type:'PUT', url: siteRoot+'missions/' + self.mission.id + '/responders/' + arg.item.id + '/team.json' + (keep ? '?keep_team=true' : ''), data: {is_leader: true, team: {name: name}} })
+      .done(function(data) {
+        self.load();
+      }).always(function() { self.isLoading(false) });
     
     console.log("drop New for " + name);
   }
@@ -182,7 +172,12 @@ var AppModel = function()
   this.dropTeam = function(arg) {
     console.log("drop into team");
     self.setResponderStatus(arg.item, 'assigned');
-    self.checkEmptyTeam(arg.sourceParent);
+    keep = self.emptyTeamQuery(arg.sourceParent);
+    self.isLoading(true);
+    $.ajax({type:'PUT', url: siteRoot+'missions/' + self.mission.id + '/responders/' + arg.item.id + '/team/' + arg.targetParent.team.id + '.json' + (keep ? '?keep_team=true' : '') })
+      .done(function(data) {
+self.load();
+      }).complete(function() { self.isLoading(false) });
   }
   
   this.setResponderStatus = function(responder, newStatus)
@@ -190,28 +185,41 @@ var AppModel = function()
     responder.current.status(newStatus);
   }
   
-  this.checkEmptyTeam = function(teamList)
+  this.emptyTeamQuery = function(teamList)
   {
     if (teamList && teamList.team && teamList().length == 0)
     {
       if (confirm('OK: Remove empty team "' + teamList.team.name + '"\nCancel: Keep team'))
       {
         self.teams.remove(teamList.team);
+        return false;
       }
     }
+    return true;
   }
   
   this.load = function()
   {
-    self.staging($.map(feed.staging, function(m) {
-      return new Responder(m);
-    }));
-    self.teams($.map(feed.teams, function(t) {
-      return new Team(t);
-    }));
-    self.base($.map(feed.base, function(m) { return new Responder(m); } ));
-    self.unavailable($.map(feed.unavailable, function(m) { return new Responder(m); } ));
+    $.ajax({type:'GET', url: siteRoot+'missions/' + self.mission.id + '/teams.json' })
+      .done(function(data) {
+        self.base.id = data.base[0].id;
+        self.staging.id = data.staging[0].id;
+
+        self.staging($.map(data.staging[0].members, function(m) {
+          return new Responder(m);
+        }));
+        self.teams($.map(data.field, function(t) {
+          return new Team(t);
+        }));
+        self.base($.map(data.base[0].members, function(m) { return new Responder(m); } ));
+      });
   }
+
+  $('body').bind('msg_responders/update', function(evt, data) {
+    if (self.mission.id != data.mission_id) return;
+     self.load();
+  });
+
 }
 
 $(document).ready(function() {
@@ -233,7 +241,7 @@ $(document).ready(function() {
     splitterDistance: 500
   });
   
-  model = new AppModel();
+  model = new AppModel(<%= @mission.to_json.html_safe %>);
   model.load();
   ko.applyBindings(model);
 });

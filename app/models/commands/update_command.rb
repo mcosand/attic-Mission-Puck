@@ -12,7 +12,6 @@ class Commands::UpdateCommand < Commands::Command
 
   def internal_execute
     objType = eval self.data['type']
-
     result = objType.where('id = ?', self.reference)
 
     if (result.empty?) then
@@ -45,6 +44,9 @@ class Commands::UpdateCommand < Commands::Command
     end
 
     if (val && self.reference != @model.id) then self.reference = @model.id end
+
+    raise ActiveRecord::Rollback unless val
+
     val
   end
 end

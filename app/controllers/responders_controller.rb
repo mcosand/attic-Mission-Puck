@@ -1,6 +1,5 @@
 class RespondersController < ApplicationController
   before_filter :find_mission
-
   before_filter :check_for_mobile
 
   def index
@@ -11,45 +10,24 @@ class RespondersController < ApplicationController
     end
   end
 
-#  def create
-#    args = params[:log]
-#    args['mission_id'] = @mission.id.to_s
-#    act = CreateLogAction.new(:data => args, :when => Time.now, :source => "@#{`hostname`.strip}")
+  def team
+    cmd = Commands::AssignTeamMemberCommand.make(
+            params[:id],
+            params[:team_id],
+            params[:is_leader],
+            params[:team],
+            params[:keep_team])
 
-#    val = false
-#    act.transaction do
-#      val = act.perform
-#      act.save
-#    end
+    val = cmd.execute
 
-#    respond_to do |format|
-#      if val
-#        broadcast "/logs/new", act.created.to_json
-
-#        format.html # new.html.erb
-#        format.json { render :json => act.created }
-#      else
-#        format.html { render :action => "new" }
-#        format.json { render :json => act.created.errors, :status => :unprocessable_entity }
-#      end
-#    end
-#  end
-
-#  def destroy
-#    log = @mission.logs.find(params[:id])
-#    act = DestroyLogAction.new(:data => {:id => log.id, :mission_id => log.mission_id}.to_json, :when => Time.now, :source => "@{`hostname`.strip}")
-
-#    act.transaction do
-#      act.perform
-#      act.save
-#    end
-
-#    broadcast "/logs/delete", params[:id]
-#    render :json => params[:id]
-#  end
-
-  def post_update
-     puts params.inspect
+    respond_to do |format|
+      if val then
+        format.json { render :json => cmd.model }
+      else
+#        format.json { render :json => cmd.model.errors, :status => :unprocessable_entity }
+        format.json { render :json => 'error', :status => :unprocessable_entity }
+      end
+    end
   end
 
   def search
@@ -75,7 +53,6 @@ class RespondersController < ApplicationController
    
     render :json => on_mission.map{|item| {:id => item.id, :firstname => item.firstname, :lastname => item.lastname, :isTemp => true, :status => item.current.status}}.concat([{:firstname => firstname, :lastname => lastname, :isTemp => true, :status => 'unknown'}])
   end
-
 
   private
     def find_mission

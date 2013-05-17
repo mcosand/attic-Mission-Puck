@@ -15,9 +15,12 @@ Feature: Manage teams and team membership
     Given there is a responder "Matthew Fox"
     Given there is a responder "Peter Haynes"
     Given there is a responder "Matthew Lockwood"
+    Given there is a team "Bravo"
     When I follow "Teams"
     Then the page should say "Staging"
-    Then "Catherine Hoxie -- signedin" should be in staging
-    When I drag responder "Catherine Hoxie -- signedin" to team "Bravo"
-    Then "Catherine Hoxie -- assigned" should be on team "Bravo"
+    When I take a screenshot
+    Then "Matthew Fox -- signedin" should be in staging
+    When I drag responder "Matthew Fox -- signedin" to team "Bravo"
+
+    Then "Matthew Fox -- assigned" should be on team "Bravo"
 

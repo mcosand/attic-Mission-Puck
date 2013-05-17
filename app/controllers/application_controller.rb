@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
 
+
   attr_accessor :enable_broadcast
 
   def broadcast(channel, json)
@@ -21,6 +22,9 @@ class ApplicationController < ActionController::Base
   end
 
   def check_for_mobile
+    ## Wierd behavior where I was losing the session. When I add a
+    ## debugging line the problem goes away?
+    dummy = session.inspect
     session[:mobile_override] = params[:mobile] if params[:mobile]
     prepare_for_mobile if mobile_device?
   end

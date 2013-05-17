@@ -1,0 +1,45 @@
+<h2 style="margin-top:1.2em;">Command history</h2>
+<h5>Command History:</h5> 
+<table cellspacing="0" id="logTable" class="data-table">
+  <thead>
+    <tr><th>Time</th><th>Log Message</th><th></th></tr>
+  </thead>
+  <tbody data-bind="foreach: {data: logs}">
+<% @logs.each do |log| %>
+   <tr>
+    <td><%= log.id %></td>
+    <td><%= log.when %></td>
+    <td><%= log.type %></td>
+    <td><%= log.data %></td>
+   </tr>
+<% end %>
+
+    <tr data-bind="css: { odd: $index() % 2 != 0 }">
+      <td class="r"><span data-bind="text:when"></span><span data-bind="text:when" class="b"></span></td>
+      <td data-bind="text:data"></td>
+    </tr>
+  </tbody>
+</table>
+<script>
+var model;
+var PageModel = function(apiMission)
+{
+  var self = this;
+
+  this.logs = ko.observableArray();
+
+
+  this.loadData = function() {
+    $.ajax({type:'GET', url: siteRoot+'missions/' + self.mission.id + '/teams.json' })
+     .done(function(data) {
+       self.logs.removeAll();
+       for (var i = 0; i < data.length; i++) self.push(data[i]);
+     });
+  }
+}
+
+$(document).ready(function() {
+  model = new PageModel($.parseJSON('<%= j(@mission.to_json.html_safe) %>'));
+//  ko.applyBindings(model);
+});
+</script>

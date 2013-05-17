@@ -32,6 +32,15 @@ describe Commands::UpdateCommand do
     cmd.model.errors.messages[:title].should_not == nil
   end
 
+  it "should create ojects with default values" do
+    m = FactoryGirl.create(:mission)
+    cmd = Commands::UpdateCommand.make(nil, 'Team', {'name' => 'Test Team', 'mission_id' => m.id})
+
+    cmd.execute.should == true
+    team = Team.find(cmd.model.id)
+    team.kind.should == :field
+  end
+
   it "should replay child object" do
     m = FactoryGirl.create(:mission)
     cmd = Commands::UpdateCommand.new({

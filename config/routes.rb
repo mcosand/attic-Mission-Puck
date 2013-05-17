@@ -11,6 +11,7 @@ Puck::Application.routes.draw do
     resources :responders do
       collection do
         get 'search', to: 'responders#search'
+        put ':id/team(/:team_id)', to: 'responders#team'
       end
     end
     resources :roster_timelines do
@@ -21,6 +22,8 @@ Puck::Application.routes.draw do
       end
     end
   end
+
+  resources :commands
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

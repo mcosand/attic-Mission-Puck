@@ -19,14 +19,14 @@ class Commands::UpdateResponderStatusCommand < Commands::UpdateCommand
 
   def internal_execute
      $result = true
-     mission_id = self.data['data']['mission_id']
+     mission = Mission.find(self.data['data']['mission_id'])
 
      data = self.data['data']
      if (data['responder_id']) then
        @responder = Responder.find(data['responder_id'])
      else 
        cmd = Commands::UpdateCommand.make(nil, 'Responder',
-                       data['responder'].merge({'mission_id' => mission_id}))
+                       data['responder'].merge({'mission_id' => mission.id}))
        cmd.topmost = false
        $result = $result & cmd.execute
        @responder = cmd.model
@@ -36,7 +36,7 @@ class Commands::UpdateResponderStatusCommand < Commands::UpdateCommand
        @unit = Unit.find(data['unit_id'])
      else
        cmd = Commands::UpdateCommand.make(nil, 'Unit',
-                       data['unit'].merge({'mission_id' => mission_id}))
+                       data['unit'].merge({'mission_id' => mission.id}))
        cmd.topmost = false
        $result = $result & cmd.execute
        @unit = cmd.model
@@ -50,6 +50,8 @@ class Commands::UpdateResponderStatusCommand < Commands::UpdateCommand
 
      if (@responder.current == nil || @responder.current.time < @model.time) then
        @responder.current = @model
+       @responder.team = (@model.status == :signedin) ? mission.teams.select{|t| t.kind == :staging}[0] : nil
+
        $result = $result & @responder.save
      end
 

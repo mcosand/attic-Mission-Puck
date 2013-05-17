@@ -56,7 +56,7 @@ td.roster-status div img { width:16pt; height:16pt; }
 <!-- ======================  -->
 <div id="signinPage" data-role="page" data-add-back-btn="true" data-theme="d">
 <div data-role="header" data-bind="template: { name: 'headerTmpl' }" data-position="fixed"></div>
-<div data-role="content" data-bind="if: responder">
+<div data-role="content" data-bind="template: { if: responder, afterRender: doJQM }">
   <h3 data-bind="text: responder().FullName" style="margin-top:0px"></h3>
 
   <div data-role="fieldcontain">
@@ -172,6 +172,9 @@ var statusTransitions = {
   "Signedout": ["Signedin", "Cleared"]
 }
 
+function doJQM(a) {
+  if (a.length > 0) { $(a[0]).parent().trigger("create"); }
+}
 
 var ResponderStatusModel = function(apiModel)
 {

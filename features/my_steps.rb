@@ -7,7 +7,7 @@ end
 
 Given /^there is a responder "(.+?) (.+?)"$/ do |first,last|
   cmd = Commands::UpdateResponderStatusCommand.make(@mission.id,
-    {'responder' => { 'first' => first, 'last' => last },
+    {'responder' => { 'firstname' => first, 'lastname' => last },
      'unit' => { 'name' => 'ABC' },
      'time' => Time.now,
      'status' => :signedin,
@@ -15,6 +15,14 @@ Given /^there is a responder "(.+?) (.+?)"$/ do |first,last|
     })
 
   cmd.execute
+end
+
+Given /^there is a team "(.*)"$/ do |team_name|
+  t = Team.new
+  t.kind = :field
+  t.mission = @mission
+  t.name = team_name
+  t.save
 end
 
 Given /^I am on a desktop$/ do
@@ -63,6 +71,7 @@ When /^I drag responder "(.+?)" to team "(.+?)"$/ do |responder,team|
 end
 
 Then /^"(.+?)" should be on team "(.+?)"$/ do |responder,team|
+  page.should_not have_content('-- loading')
   find(:xpath, "//div[text()='#{team}']/..").should have_content(responder)
 end
 
